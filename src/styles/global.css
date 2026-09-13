@@ -273,7 +273,9 @@ html:not(.js-listo) .reticula i {
   display: flex;
   align-items: center;
   gap: clamp(0.85rem, 2.5vw, 1.75rem);
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .navegacion a {
