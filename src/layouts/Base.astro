@@ -1,0 +1,94 @@
+---
+import '@fontsource/titillium-web/latin-400.css';
+import '@fontsource/titillium-web/latin-400-italic.css';
+import '@fontsource/titillium-web/latin-600.css';
+import '@fontsource/titillium-web/latin-700.css';
+import '../styles/global.css';
+import Cabecera from '../components/Cabecera.astro';
+import Pie from '../components/Pie.astro';
+import { SITIO } from '../config';
+import { RUTAS, UI, type Idioma } from '../i18n/ui';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  idioma: Idioma;
+  alternas?: Partial<Record<Idioma, string>>;
+  tipo?: 'website' | 'article';
+  fecha?: Date;
+}
+
+const { titulo, descripcion, idioma, alternas = {}, tipo = 'website', fecha } = Astro.props;
+
+const canonica = new URL(Astro.url.pathname, Astro.site).href;
+const og = new URL('/og.png', Astro.site).href;
+const tituloCompleto = titulo === 'acvx.es' ? titulo : `${titulo} · acvx.es`;
+const t = UI[idioma];
+---
+
+<!doctype html>
+<html lang={t.etiquetaIdioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descripcion} />
+    <link rel="canonical" href={canonica} />
+
+    <script is:inline>
+      try {
+        const guardado = localStorage.getItem('tema');
+        if (guardado === 'dark' || guardado === 'light') {
+          document.documentElement.dataset.tema = guardado;
+        }
+      } catch (e) {}
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,wght@100,400..700&display=swap"
+    />
+
+    {
+      Object.entries(alternas).map(([codigo, ruta]) => (
+        <link rel="alternate" hreflang={codigo === 'es' ? 'es-ES' : 'en'} href={new URL(ruta, Astro.site).href} />
+      ))
+    }
+    {alternas.es && <link rel="alternate" hreflang="x-default" href={new URL(alternas.es, Astro.site).href} />}
+
+    <link rel="alternate" type="application/rss+xml" title={`acvx.es · ${t.archivoTitulo}`} href={RUTAS[idioma].rss} />
+
+    <meta property="og:type" content={tipo} />
+    <meta property="og:title" content={titulo} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonica} />
+    <meta property="og:site_name" content="acvx.es" />
+    <meta property="og:locale" content={idioma === 'es' ? 'es_ES' : 'en_GB'} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    {tipo === 'article' && fecha && <meta property="article:published_time" content={fecha.toISOString()} />}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titulo} />
+    <meta name="twitter:description" content={descripcion} />
+    <meta name="twitter:image" content={og} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="author" content={SITIO.nombre} />
+    <link rel="sitemap" href="/sitemap.xml" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">{t.saltarContenido}</a>
+    <Cabecera idioma={idioma} alternas={alternas} />
+    <main class="principal" id="contenido">
+      <div class="envoltorio">
+        <slot />
+      </div>
+    </main>
+    <Pie idioma={idioma} />
+  </body>
+</html>

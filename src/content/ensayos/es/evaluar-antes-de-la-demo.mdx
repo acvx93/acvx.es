@@ -1,0 +1,50 @@
+---
+titulo: Evaluar antes de enseñar la demo
+descripcion: Una demo con tres preguntas elegidas a mano convence a cualquiera y no informa de nada. Lo que decide si un sistema de IA puede encenderse es un conjunto de evaluación escrito antes del prototipo.
+fecha: 2026-08-27
+traduccion: eval-before-demo
+---
+
+Hay un momento muy concreto en todo proyecto de IA generativa en el que se decide si va a salir bien: cuando alguien pregunta si ya está listo y tú tienes, o no tienes, una forma de contestar con un número.
+
+Lo habitual es no tenerla. Lo que hay es una demo, tres preguntas que funcionan muy bien elegidas entre las veinte que probaste. Convence a toda la sala, incluido a ti, y no dice nada sobre qué pasará con las mil preguntas que vienen después.
+
+## El conjunto de evaluación se escribe antes
+
+Entre cincuenta y cien preguntas reales, con la respuesta que debería dar el sistema escrita por alguien que sabe del tema. Reales significa sacadas de donde la gente ya pregunta: los tickets, el canal interno donde se pide ayuda, el correo del equipo que atiende dudas. No inventadas en una reunión.
+
+Y se escribe antes de tener prototipo. Si lo escribes después, lo escribes sin querer para que el prototipo apruebe. Ese sesgo cuesta mucho de ver desde dentro y se ve clarísimo tres meses más tarde.
+
+## Medir la recuperación aparte de la redacción
+
+Cuando una respuesta sale mal hay al menos dos causas distintas: el sistema no encontró el documento correcto, o lo encontró y redactó mal. Son problemas diferentes, con arreglos diferentes, y mirando solo la respuesta final no se distinguen.
+
+Así que se miden por separado. Para cada pregunta del conjunto se anota qué documento o fragmento contiene la respuesta, y se mide con qué frecuencia aparece entre los primeros resultados de la recuperación. Si ese número es bajo, tocar la instrucción del modelo no va a arreglar nada, y saberlo te ahorra dos semanas de intentarlo.
+
+## Preguntas cuya respuesta correcta es "no lo sé"
+
+Un conjunto donde todas las preguntas tienen respuesta enseña al sistema, y al equipo, que siempre hay que contestar. Después el sistema se inventa cosas y nadie entiende de dónde ha salido eso.
+
+Conviene meter tres tipos incómodos. Preguntas fuera del dominio, donde lo correcto es decir que no corresponde. Preguntas ambiguas, donde lo correcto es pedir una aclaración. Y preguntas cuya fuente está desactualizada, donde lo correcto es responder citando la fecha del documento. Sin esas, el conjunto premia justo el comportamiento que más daño hace en producción.
+
+## El juez automático ordena, no aprueba
+
+Usar un modelo para puntuar respuestas es útil y barato, y funciona bien para comparar dos variantes entre sí. Para decidir si el sistema puede ponerse delante de gente real, no.
+
+La forma de saber si te puedes fiar del juez es anotar a mano una muestra, treinta o cincuenta respuestas, y medir cuánto coincide el juez con la persona. Si coinciden poco, el juez está midiendo otra cosa y tus gráficas son decorativas. Esa comprobación se repite cada vez que cambias el modelo juez o su instrucción.
+
+## El coste y la latencia son parte de la calidad
+
+Una respuesta impecable que tarda veinte segundos no se usa, y un sistema que responde bien pero cuesta demasiado por consulta no sobrevive al presupuesto del año siguiente. Las dos cosas van en el mismo panel que la exactitud, no en un anexo.
+
+Y se mira el percentil 95, no la media. La media la arreglan las preguntas fáciles. El percentil 95 es lo que siente la persona que tuvo mala suerte.
+
+## Fijar el conjunto y pasarlo en cada cambio
+
+Cada cambio de instrucción, de modelo, de tamaño de fragmento o de estrategia de recuperación se evalúa contra el mismo conjunto. Sin eso, las mejoras locales rompen cosas lejanas y nadie se entera hasta que lo cuenta un usuario.
+
+El conjunto se versiona junto al código y solo crece. Cada fallo que aparece en producción entra como caso nuevo y se queda para siempre. Al cabo de unos meses, ese fichero es el activo más valioso del proyecto, bastante por encima de las instrucciones del modelo.
+
+## Para qué sirve cada cosa
+
+La demo sirve para explicar el proyecto a quien lo paga. La evaluación sirve para decidir si se puede encender. Montar la segunda antes de la primera cuesta alrededor de una semana, y es lo que separa un asistente que la gente usa de uno que se apaga a los dos meses sin que nadie lo diga en voz alta.

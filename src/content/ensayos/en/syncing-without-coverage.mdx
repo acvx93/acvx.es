@@ -1,0 +1,52 @@
+---
+titulo: When the phone has no signal and the work order is already signed
+descripcion: Syncing field work without a network forces decisions about who generates identifiers, which clock wins, and what happens to a signature when the document changes underneath it.
+fecha: 2026-06-18
+traduccion: offline-first
+---
+
+The scene is always similar. A technician walks down to the track with a phone, opens the work order, takes the photos, records the measurements and asks the supervisor to sign. There is no signal, and there will not be one until they climb back up. For the next four hours, the only place in the world where that work exists is a phone in somebody's pocket.
+
+Designing for that changes almost every decision you would make with a network available. These are the ones that cost me the most to learn.
+
+## Retrying is not syncing
+
+The first instinct is to put the request in a queue and retry until the server answers. It works until the day the server did receive the request and the response was lost on the way back. The client cannot tell those two cases apart, it retries, and now there are two identical work orders with different identifiers.
+
+The way out is to move identifier generation to the client. The device creates the key for the work order before leaving, using a time-ordered UUID, and the server treats the insert as an upsert against that key. The third retry does not create a third work order, it updates the first one. The request becomes idempotent, which is the property that was actually needed.
+
+It looks like a small detail and it changes something fundamental: who owns the identity of a record. If the server assigns the identifier, the client cannot refer to a work order until there is a network, which forces temporary identifiers that have to be reconciled later. That road is full of bugs that only show up in production.
+
+## The device clock lies
+
+Ordering changes by the phone's clock seems reasonable until you look at real data. People change time zones when they travel, some devices drift by minutes, and every so often somebody sets the time by hand. If ordering depends on that clock, sooner or later an old correction overwrites a recent one.
+
+What works is storing the device time as informational data, because the technician cares when the measurement was taken, and ordering by a counter the server assigns on arrival. The local clock tells the story. The server counter decides the order.
+
+## Conflicts do not go away by not looking at them
+
+Two people edit the same work order, each of them offline, and both upload. If you do nothing, the last one to arrive wins. That is already a decision, even though it looks like the absence of one, and it amounts to losing somebody's work without telling them.
+
+Merging field by field has worked for me. If one person corrected the measurement and another added a note, both fit. If both changed the same measurement to different values, no algorithm solves that: the record is flagged, both versions are kept, and a person decides. There are only a handful of these a month, and each one you escalate to a person is one you have not silently corrupted.
+
+## A signature covers content, not a record
+
+This is the one I have seen handled badly most often. Somebody signs the work order in the field, and three days later, back in the office, a measurement on that same order is corrected. The record still carries its signature, so the system still reports it as signed, but what was signed is no longer what is there.
+
+A signature has to freeze content. At signing time an immutable document is generated with whatever was there, its hash is computed, and the signature is bound to that hash. Later corrections do not touch the signed document: they create a new one that references the previous. The history gets longer and far more defensible, which is exactly what you want from a record on the day somebody audits it.
+
+## The queue has dependencies, not just age
+
+A blind FIFO queue tries to upload the photo of a work order that does not exist on the server yet, fails, and the retry fails the same way. Pending items form a graph: the attachment depends on the order, the signature depends on the content, the closure depends on the measurements. Ordering has to follow dependencies and not only age.
+
+And there has to be a limit. After a handful of failed attempts, the system stops retrying silently and tells the person. A queue that retries forever without saying anything is an elegant way to lose work.
+
+## The metric that matters
+
+It is tempting to watch the percentage of successful syncs, which always looks good and never warns you about anything. The number that actually hurts is a different one: the age of the oldest item still pending on any device.
+
+If that number grows, there is work that has been done and signed and nobody in the office has seen it yet. It is the only metric on this list that an operations manager understands without explanation.
+
+## What is left
+
+Field work is a small distributed system, with clocks that disagree, guaranteed partitions and a legal traceability requirement on top. Treating the absence of a network as the system's normal state is what makes every other decision fall into place.

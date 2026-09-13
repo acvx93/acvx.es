@@ -1,0 +1,26 @@
+---
+import { UI, type Idioma } from '../i18n/ui';
+
+const { idioma } = Astro.props as { idioma: Idioma };
+const etiqueta = UI[idioma].cambiarTema;
+---
+
+<button class="boton-icono" type="button" data-tema-boton aria-label={etiqueta} title={etiqueta}>
+  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+    <path d="M8 1.75A6.25 6.25 0 0 1 8 14.25Z" fill="currentColor"></path>
+  </svg>
+</button>
+
+<script is:inline>
+  document.querySelector('[data-tema-boton]')?.addEventListener('click', () => {
+    const raiz = document.documentElement;
+    const oscuroPorSistema = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const actual = raiz.dataset.tema ?? (oscuroPorSistema ? 'dark' : 'light');
+    const siguiente = actual === 'dark' ? 'light' : 'dark';
+    raiz.dataset.tema = siguiente;
+    try {
+      localStorage.setItem('tema', siguiente);
+    } catch (e) {}
+  });
+</script>

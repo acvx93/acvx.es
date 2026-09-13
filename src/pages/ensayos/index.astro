@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import ListaEnsayos from '../../components/ListaEnsayos.astro';
+import { RUTAS, UI } from '../../i18n/ui';
+import { ensayosDe } from '../../lib/ensayos';
+
+const idioma = 'es' as const;
+const t = UI[idioma];
+const ensayos = await ensayosDe(idioma);
+const alternas = { es: RUTAS.es.ensayos, en: RUTAS.en.ensayos };
+---
+
+<Base titulo={t.archivoTitulo} descripcion={t.archivoDescripcion} idioma={idioma} alternas={alternas}>
+  <header class="cabecera-pagina">
+    <h1>{t.archivoTitulo}</h1>
+    <p class="cabecera-pagina__descripcion">{t.archivoDescripcion}</p>
+  </header>
+
+  {ensayos.length > 0 ? <ListaEnsayos entradas={ensayos} idioma={idioma} /> : <p>{t.archivoVacio}</p>}
+</Base>

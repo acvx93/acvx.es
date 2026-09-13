@@ -1,0 +1,21 @@
+---
+import { UI, type Idioma } from '../i18n/ui';
+
+interface Props {
+  idioma: Idioma;
+  destino: string;
+}
+
+const { idioma, destino } = Astro.props;
+const otro: Idioma = idioma === 'es' ? 'en' : 'es';
+---
+
+<a
+  class="selector-idioma"
+  href={destino}
+  lang={UI[otro].etiquetaIdioma}
+  hreflang={UI[otro].etiquetaIdioma}
+  aria-label={UI[idioma].otroIdioma}
+>
+  {otro}
+</a>

@@ -1,0 +1,24 @@
+---
+import { render } from 'astro:content';
+import Ensayo from '../../layouts/Ensayo.astro';
+import { alternasDe, ensayosDe, slugDe } from '../../lib/ensayos';
+
+export async function getStaticPaths() {
+  const entradas = await ensayosDe('es');
+  return entradas.map((entrada) => ({ params: { slug: slugDe(entrada) }, props: { entrada } }));
+}
+
+const { entrada } = Astro.props;
+const { Content } = await render(entrada);
+const alternas = await alternasDe(entrada);
+---
+
+<Ensayo
+  titulo={entrada.data.titulo}
+  descripcion={entrada.data.descripcion}
+  fecha={entrada.data.fecha}
+  idioma="es"
+  alternas={alternas}
+>
+  <Content />
+</Ensayo>

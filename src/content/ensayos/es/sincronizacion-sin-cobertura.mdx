@@ -1,0 +1,52 @@
+---
+titulo: Cuando el móvil no tiene cobertura y el parte ya está firmado
+descripcion: Sincronizar trabajo de campo sin red pide decidir quién genera los identificadores, qué reloj manda y qué ocurre con una firma cuando el documento cambia por debajo.
+fecha: 2026-06-18
+traduccion: offline-first
+---
+
+La escena es siempre parecida. Un técnico baja a vía con el teléfono, abre el parte de la intervención, hace las fotos, anota las mediciones y pide la firma del responsable. No hay cobertura, ni la va a haber hasta que vuelva a subir. Durante las siguientes cuatro horas, el único sitio del mundo donde existe ese trabajo es un teléfono en el bolsillo de alguien.
+
+Diseñar para eso cambia casi todas las decisiones que tomarías con red disponible. Estas son las que me han costado más caro aprender.
+
+## Reintentar no es sincronizar
+
+El primer reflejo es poner la petición en una cola y reintentar hasta que el servidor conteste. Funciona hasta el día en que el servidor sí recibió la petición y la respuesta se perdió en el camino. El cliente no distingue esos dos casos, reintenta, y ahora hay dos partes iguales con identificadores distintos.
+
+La salida es mover la generación del identificador al cliente. El dispositivo crea la clave del parte antes de salir, con un UUID ordenable por tiempo, y el servidor trata el alta como un upsert contra esa clave. El tercer reintento no crea un tercer parte, actualiza el primero. La petición pasa a ser idempotente, que es la propiedad que de verdad hacía falta.
+
+Parece un detalle menor y cambia algo de fondo: quién es dueño de la identidad de un registro. Si el identificador lo pone el servidor, el cliente no puede hablar de un parte hasta que haya red, y eso obliga a inventar identificadores temporales que hay que reconciliar después. Ese camino está lleno de errores que solo aparecen en producción.
+
+## El reloj del dispositivo miente
+
+Ordenar los cambios por la hora del teléfono parece razonable hasta que miras datos reales. La gente cambia de zona horaria al viajar, algunos dispositivos van con minutos de deriva y de vez en cuando alguien ajusta la hora a mano. Si el orden depende de ese reloj, tarde o temprano una corrección antigua sobrescribe una reciente.
+
+Lo que funciona es guardar la hora del dispositivo como dato informativo, porque al técnico le importa cuándo hizo la medición, y ordenar por un contador que asigna el servidor al recibir. El reloj local cuenta la historia. El contador del servidor decide el orden.
+
+## Los conflictos no desaparecen por no mirarlos
+
+Dos personas editan el mismo parte, cada una sin red, y las dos suben. Si no haces nada, gana la última que llega. Eso ya es una decisión, aunque parezca la ausencia de una, y consiste en perder el trabajo de alguien sin avisarle.
+
+A mí me ha funcionado mezclar por campo. Si una persona corrigió la medición y otra añadió una observación, las dos cosas caben. Si las dos cambiaron la misma medición a valores distintos, eso no lo resuelve ningún algoritmo: el registro se marca, se conservan las dos versiones y alguien decide. Son pocos casos al mes, y cada uno que escalas a una persona es un caso que no has corrompido en silencio.
+
+## Una firma es sobre un contenido, no sobre un registro
+
+Este es el que más veces he visto mal resuelto. Alguien firma el parte en campo y tres días después, en oficina, se corrige una medición de ese mismo parte. El registro conserva su firma, así que el sistema sigue diciendo que está firmado, pero lo que se firmó ya no es lo que hay.
+
+La firma tiene que congelar un contenido. Al firmar se genera un documento inmutable con lo que había en ese momento, se calcula su hash y la firma se asocia a ese hash. Las correcciones posteriores no tocan el documento firmado: crean uno nuevo que referencia al anterior. El histórico queda más largo y mucho más defendible, que es exactamente lo que le pides a un registro el día que alguien lo audita.
+
+## La cola tiene dependencias, no solo antigüedad
+
+Una cola FIFO ciega intenta subir la foto de un parte que todavía no existe en el servidor, falla, y el reintento falla igual. Los elementos pendientes forman un grafo: el adjunto depende del parte, la firma depende del contenido, el cierre depende de las mediciones. Hay que ordenar por dependencias y no solo por antigüedad.
+
+Y hay que poner un límite. Después de unos cuantos intentos fallidos, el sistema deja de reintentar en silencio y se lo dice a la persona. Una cola que reintenta para siempre sin avisar es una forma elegante de perder trabajo.
+
+## La métrica que importa
+
+Es tentador mirar el porcentaje de sincronizaciones correctas, que siempre sale bien y nunca avisa de nada. El número que de verdad duele es otro: la edad del elemento más antiguo que sigue pendiente en algún dispositivo.
+
+Si ese número crece, hay trabajo hecho y firmado que nadie en la oficina ha visto todavía. Es la única métrica de esta lista que un responsable de operaciones entiende sin que se la expliques.
+
+## Lo que queda
+
+El trabajo de campo es un sistema distribuido pequeño, con relojes que no concuerdan, particiones garantizadas y un requisito legal de trazabilidad por encima. Tratar la falta de red como el estado normal del sistema es lo que hace que el resto de las decisiones encajen.

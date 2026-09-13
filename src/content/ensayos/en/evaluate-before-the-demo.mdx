@@ -1,0 +1,50 @@
+---
+titulo: Evaluate before you show the demo
+descripcion: A demo built on three hand-picked questions convinces anyone and tells you nothing. What decides whether an AI system can be switched on is an evaluation set written before the prototype.
+fecha: 2026-08-27
+traduccion: eval-before-demo
+---
+
+There is a very specific moment in every generative AI project where it is decided whether the thing will go well: when somebody asks if it is ready, and you either have or do not have a way to answer with a number.
+
+Usually you do not. What you have is a demo, three questions that work beautifully, picked from the twenty you tried. It convinces the whole room, yourself included, and says nothing about what will happen with the thousand questions that come next.
+
+## The evaluation set is written first
+
+Between fifty and a hundred real questions, each with the answer the system should give, written by somebody who knows the subject. Real means taken from where people already ask: the tickets, the internal channel where help gets requested, the inbox of the team that handles queries. Not invented in a meeting.
+
+And it gets written before there is a prototype. If you write it afterwards, you will write it, without meaning to, so that the prototype passes. That bias is very hard to see from the inside and perfectly obvious three months later.
+
+## Measure retrieval separately from writing
+
+When an answer comes out wrong there are at least two different causes: the system did not find the right document, or it found it and wrote badly. Those are different problems with different fixes, and looking only at the final answer you cannot tell them apart.
+
+So measure them separately. For each question in the set, record which document or chunk contains the answer, and measure how often it appears among the top retrieval results. If that number is low, changing the model's instructions will not fix anything, and knowing that saves you two weeks of trying.
+
+## Questions whose correct answer is "I do not know"
+
+A set where every question has an answer teaches the system, and the team, that there is always something to reply. Then the system makes things up and nobody understands where that came from.
+
+Three uncomfortable types are worth including. Out-of-domain questions, where the right response is to say it does not apply. Ambiguous questions, where the right response is to ask for clarification. And questions whose source is out of date, where the right response cites the document's date. Without those, the set rewards exactly the behaviour that does the most damage in production.
+
+## The automatic judge ranks, it does not approve
+
+Using a model to score answers is useful and cheap, and it works well for comparing two variants against each other. For deciding whether the system can be put in front of real people, it does not.
+
+The way to know whether you can trust the judge is to annotate a sample by hand, thirty or fifty answers, and measure how often the judge agrees with the person. If agreement is low, the judge is measuring something else and your charts are decorative. That check gets repeated every time you change the judge model or its instructions.
+
+## Cost and latency are part of quality
+
+A flawless answer that takes twenty seconds does not get used, and a system that answers well but costs too much per query will not survive next year's budget. Both belong on the same dashboard as accuracy, not in an appendix.
+
+And watch the 95th percentile rather than the mean. The mean gets fixed by the easy questions. The 95th percentile is what the unlucky person feels.
+
+## Freeze the set and run it on every change
+
+Every change of instruction, model, chunk size or retrieval strategy gets evaluated against the same set. Without that, local improvements break distant things and nobody finds out until a user reports it.
+
+The set is versioned alongside the code and it only grows. Every failure that shows up in production enters as a new case and stays forever. After a few months that file is the most valuable asset in the project, well above the model instructions.
+
+## What each thing is for
+
+The demo is for explaining the project to whoever pays for it. The evaluation is for deciding whether it can be switched on. Building the second before the first costs about a week, and it is what separates an assistant people use from one that quietly gets turned off two months later.

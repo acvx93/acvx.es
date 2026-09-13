@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import { RUTAS, UI } from '../i18n/ui';
+
+const idioma = 'es' as const;
+const t = UI[idioma];
+---
+
+<Base titulo={t.noEncontradoTitulo} descripcion={t.noEncontradoTexto} idioma={idioma}>
+  <header class="cabecera-pagina">
+    <h1>{t.noEncontradoTitulo}</h1>
+    <p class="cabecera-pagina__descripcion">{t.noEncontradoTexto}</p>
+  </header>
+  <a class="enlace-mas" href={RUTAS.es.inicio}>{t.noEncontradoEnlace}</a>
+</Base>

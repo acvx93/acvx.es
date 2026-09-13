@@ -1,0 +1,42 @@
+---
+import TemaToggle from './TemaToggle.astro';
+import SelectorIdioma from './SelectorIdioma.astro';
+import { RUTAS, UI, type Idioma } from '../i18n/ui';
+
+interface Props {
+  idioma: Idioma;
+  alternas?: Partial<Record<Idioma, string>>;
+}
+
+const { idioma, alternas = {} } = Astro.props;
+const t = UI[idioma];
+const r = RUTAS[idioma];
+const aqui = Astro.url.pathname.replace(/\/?$/, '/');
+
+const enlaces = [
+  { href: r.sobre, texto: t.navSobre },
+  { href: r.ensayos, texto: t.navEnsayos },
+];
+
+const otroIdioma: Idioma = idioma === 'es' ? 'en' : 'es';
+const destinoIdioma = alternas[otroIdioma] ?? RUTAS[otroIdioma].inicio;
+---
+
+<header class="cabecera">
+  <div class="envoltorio cabecera__fila">
+    <a class="marca" href={r.inicio}>acvx<span class="marca__punto">.</span>es</a>
+    <nav class="navegacion" aria-label={t.navInicio}>
+      {
+        enlaces.map((enlace) => (
+          <a href={enlace.href} aria-current={aqui.startsWith(enlace.href) ? 'page' : undefined}>
+            {enlace.texto}
+          </a>
+        ))
+      }
+      <span class="controles">
+        <SelectorIdioma idioma={idioma} destino={destinoIdioma} />
+        <TemaToggle idioma={idioma} />
+      </span>
+    </nav>
+  </div>
+</header>

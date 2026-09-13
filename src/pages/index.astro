@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import ListaEnsayos from '../components/ListaEnsayos.astro';
+import { RUTAS, UI } from '../i18n/ui';
+import { ensayosDe } from '../lib/ensayos';
+
+const idioma = 'es' as const;
+const t = UI[idioma];
+const ensayos = (await ensayosDe(idioma)).slice(0, 3);
+const alternas = { es: RUTAS.es.inicio, en: RUTAS.en.inicio };
+---
+
+<Base
+  titulo="acvx.es"
+  descripcion="Alejandro, ingeniero industrial. Sistemas de IA aplicada y producto propio, contado desde dentro."
+  idioma={idioma}
+  alternas={alternas}
+>
+  <h1 class="declaracion">
+    Construyo sistemas de IA aplicada y, desde hace un tiempo, <span class="declaracion__acento">producto propio</span>.
+  </h1>
+  <p class="entradilla">
+    Soy Alejandro, ingeniero industrial en A Coruña. Pasé por desarrollo de producto en Situm, por IA aplicada a
+    manufactura en Ancora Mobile y por IA generativa a escala en Inditex. Aquí escribo lo que aprendo construyendo.
+  </p>
+
+  {
+    ensayos.length > 0 && (
+      <section class="seccion">
+        <h2 class="seccion__titulo">{t.ultimosEnsayos}</h2>
+        <ListaEnsayos entradas={ensayos} idioma={idioma} />
+        <a class="enlace-mas" href={RUTAS.es.ensayos}>{t.todosLosEnsayos}</a>
+      </section>
+    )
+  }
+</Base>

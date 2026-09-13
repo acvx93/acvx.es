@@ -1,0 +1,33 @@
+---
+import Base from './Base.astro';
+import { RUTAS, UI, formatearFecha, type Idioma } from '../i18n/ui';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  fecha: Date;
+  idioma: Idioma;
+  alternas?: Partial<Record<Idioma, string>>;
+}
+
+const { titulo, descripcion, fecha, idioma, alternas = {} } = Astro.props;
+const t = UI[idioma];
+---
+
+<Base titulo={titulo} descripcion={descripcion} idioma={idioma} alternas={alternas} tipo="article" fecha={fecha}>
+  <article>
+    <header class="cabecera-pagina">
+      <p class="ensayo__meta">
+        <time datetime={fecha.toISOString().slice(0, 10)}>{formatearFecha(fecha, idioma)}</time>
+      </p>
+      <h1>{titulo}</h1>
+      <p class="ensayo__entradilla">{descripcion}</p>
+    </header>
+    <div class="prosa">
+      <slot />
+    </div>
+  </article>
+  <p class="cierre-ensayo">
+    <a href={RUTAS[idioma].ensayos}>{t.volverEnsayos}</a>
+  </p>
+</Base>

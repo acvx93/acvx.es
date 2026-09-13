@@ -1,0 +1,20 @@
+---
+import { SITIO } from '../config';
+import { RUTAS, UI, type Idioma } from '../i18n/ui';
+
+const { idioma } = Astro.props as { idioma: Idioma };
+const t = UI[idioma];
+const r = RUTAS[idioma];
+---
+
+<footer class="pie">
+  <div class="envoltorio pie__fila">
+    <p>
+      {t.escribeme} <a href={`mailto:${SITIO.correo}`}>{SITIO.correo}</a>
+    </p>
+    <div class="pie__enlaces">
+      <a href={SITIO.linkedin} rel="me noopener">LinkedIn</a>
+      <a href={r.rss}>{t.feed}</a>
+    </div>
+  </div>
+</footer>
