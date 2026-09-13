@@ -579,7 +579,7 @@ html:not(.js-listo) .reticula i {
 .trayectoria--fijada .cota {
   position: absolute;
   inset: 0;
-  display: block;
+  grid-template-columns: 1fr;
   border: 0;
   padding: 0;
   opacity: 0;
