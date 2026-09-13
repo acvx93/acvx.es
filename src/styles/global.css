@@ -92,7 +92,8 @@ h3 {
   font-variation-settings: "ROND" 0;
   font-weight: 700;
   line-height: 1.08;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   text-wrap: balance;
   margin: 0;
 }
@@ -619,7 +620,7 @@ html:not(.js-listo) .reticula i {
 .trayectoria--fijada .cota__nombre {
   font-size: clamp(2.25rem, 7vw, 5rem);
   line-height: 0.98;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 
 .trayectoria--fijada .cota__texto {
