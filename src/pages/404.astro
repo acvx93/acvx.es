@@ -7,9 +7,12 @@ const t = UI[idioma];
 ---
 
 <Base titulo={t.noEncontradoTitulo} descripcion={t.noEncontradoTexto} idioma={idioma}>
-  <header class="cabecera-pagina">
-    <h1>{t.noEncontradoTitulo}</h1>
-    <p class="cabecera-pagina__descripcion">{t.noEncontradoTexto}</p>
-  </header>
-  <a class="enlace-mas" href={RUTAS.es.inicio}>{t.noEncontradoEnlace}</a>
+  <div class="envoltorio">
+    <header class="cabecera-pagina">
+      <p class="rotulo">{t.noEncontradoRotulo}</p>
+      <h1>{t.noEncontradoTitulo}</h1>
+      <p class="cabecera-pagina__descripcion">{t.noEncontradoTexto}</p>
+    </header>
+    <a class="enlace-mas" href={RUTAS.es.inicio}>{t.noEncontradoEnlace}</a>
+  </div>
 </Base>

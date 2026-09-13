@@ -7,27 +7,36 @@ interface Props {
   descripcion: string;
   fecha: Date;
   idioma: Idioma;
+  slug: string;
   alternas?: Partial<Record<Idioma, string>>;
 }
 
-const { titulo, descripcion, fecha, idioma, alternas = {} } = Astro.props;
+const { titulo, descripcion, fecha, idioma, slug, alternas = {} } = Astro.props;
 const t = UI[idioma];
 ---
 
-<Base titulo={titulo} descripcion={descripcion} idioma={idioma} alternas={alternas} tipo="article" fecha={fecha}>
-  <article>
+<Base
+  titulo={titulo}
+  descripcion={descripcion}
+  idioma={idioma}
+  alternas={alternas}
+  tipo="article"
+  fecha={fecha}
+  progreso
+>
+  <article class="envoltorio">
     <header class="cabecera-pagina">
-      <p class="ensayo__meta">
+      <p class="rotulo ensayo__meta">
         <time datetime={fecha.toISOString().slice(0, 10)}>{formatearFecha(fecha, idioma)}</time>
       </p>
-      <h1>{titulo}</h1>
-      <p class="ensayo__entradilla">{descripcion}</p>
+      <h1 style={`view-transition-name: ensayo-${slug}`}>{titulo}</h1>
+      <p class="cabecera-pagina__descripcion">{descripcion}</p>
     </header>
     <div class="prosa">
       <slot />
     </div>
+    <p class="cierre-ensayo">
+      <a class="enlace-mas" href={RUTAS[idioma].ensayos}>{t.volverEnsayos}</a>
+    </p>
   </article>
-  <p class="cierre-ensayo">
-    <a href={RUTAS[idioma].ensayos}>{t.volverEnsayos}</a>
-  </p>
 </Base>

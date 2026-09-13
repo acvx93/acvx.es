@@ -16,9 +16,10 @@ interface Props {
   alternas?: Partial<Record<Idioma, string>>;
   tipo?: 'website' | 'article';
   fecha?: Date;
+  progreso?: boolean;
 }
 
-const { titulo, descripcion, idioma, alternas = {}, tipo = 'website', fecha } = Astro.props;
+const { titulo, descripcion, idioma, alternas = {}, tipo = 'website', fecha, progreso = false } = Astro.props;
 
 const canonica = new URL(Astro.url.pathname, Astro.site).href;
 const og = new URL('/og.png', Astro.site).href;
@@ -42,14 +43,41 @@ const t = UI[idioma];
           document.documentElement.dataset.tema = guardado;
         }
       } catch (e) {}
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('js-listo');
+      }
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,wght@100,400..700&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,wght@0..100,300..700&display=swap"
     />
+    <link
+      id="fuente-titulos"
+      rel="stylesheet"
+      media="print"
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,wght@0..100,300..700&display=swap"
+    />
+    <script is:inline>
+      (function () {
+        var hoja = document.getElementById('fuente-titulos');
+        if (!hoja) return;
+        var aplicar = function () {
+          hoja.media = 'all';
+        };
+        if (hoja.sheet) aplicar();
+        else hoja.addEventListener('load', aplicar);
+      })();
+    </script>
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ROND,wght@0..100,300..700&display=swap"
+      />
+    </noscript>
 
     {
       Object.entries(alternas).map(([codigo, ruta]) => (
@@ -82,13 +110,21 @@ const t = UI[idioma];
     <link rel="sitemap" href="/sitemap.xml" />
   </head>
   <body>
+    <canvas class="lienzo" aria-hidden="true"></canvas>
+    <div class="grano" aria-hidden="true"></div>
+    <div class="reticula" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    {progreso && <div class="progreso" aria-hidden="true"></div>}
+
     <a class="saltar" href="#contenido">{t.saltarContenido}</a>
     <Cabecera idioma={idioma} alternas={alternas} />
-    <main class="principal" id="contenido">
-      <div class="envoltorio">
-        <slot />
-      </div>
+    <main id="contenido">
+      <slot />
     </main>
     <Pie idioma={idioma} />
+
+    <script>
+      import '../scripts/movimiento';
+    </script>
   </body>
 </html>

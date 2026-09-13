@@ -1,54 +1,58 @@
 ---
 import Base from '../layouts/Base.astro';
-import { RUTAS } from '../i18n/ui';
+import { RUTAS, UI } from '../i18n/ui';
 
 const idioma = 'es' as const;
+const t = UI[idioma];
 const alternas = { es: RUTAS.es.sobre, en: RUTAS.en.sobre };
 const descripcion =
   'El recorrido desde la ingeniería mecánica hasta construir producto propio, y qué enseñó cada salto.';
 ---
 
 <Base titulo="Sobre mí" descripcion={descripcion} idioma={idioma} alternas={alternas}>
-  <header class="cabecera-pagina">
-    <h1>Sobre mí</h1>
-    <p class="cabecera-pagina__descripcion">{descripcion}</p>
-  </header>
+  <div class="envoltorio">
+    <header class="cabecera-pagina">
+      <p class="rotulo">{t.navSobre}</p>
+      <h1>Ingeniero que construye, y que escribe lo que rompe primero.</h1>
+      <p class="cabecera-pagina__descripcion">{descripcion}</p>
+    </header>
 
-  <div class="prosa">
-    <p>
-      Empecé en ingeniería industrial, con el grado en mecánica y el máster en la Universidade de Vigo. Los primeros
-      años los pasé en CAD y CAE, simulando comportamiento estructural y térmico, imprimiendo prototipos y
-      acompañándolos por el ciclo completo hasta producción. También colaboré con la universidad en vibraciones
-      mecánicas. De ahí me quedó una costumbre que no he perdido: antes de defender un diseño, ensayarlo.
-    </p>
-    <p>
-      El salto a producto llegó en Situm, una empresa de posicionamiento en interiores en A Coruña. Allí entendí que
-      una tecnología difícil no se vende explicando la tecnología, y que las decisiones de hoja de ruta aguantan mucho
-      mejor cuando salen de datos de uso que cuando salen de la última reunión. También me tocó formar en temas
-      técnicos a equipos de negocio, que es el examen más honesto que existe sobre si de verdad entiendes algo.
-    </p>
-    <p>
-      En Ancora Mobile volví a la planta, esta vez con IA. Modelos aplicados a entornos industriales y cuadros de mando
-      en PowerBI para que las decisiones de operación salieran de los datos del turno y no de la memoria de alguien.
-      Aprendí que un cuadro de mando que nadie mira rara vez tiene un problema de visualización. Tiene un problema de a
-      quién le cambia la decisión.
-    </p>
-    <p>
-      Después vino Inditex, en Arteixo, y con ello la escala. IA generativa, aprendizaje automático y procesamiento de
-      lenguaje natural sobre texto y voz. Trabajé en sistemas de conocimiento corporativo con bases de datos
-      vectoriales y en asistentes conversacionales internos. A ese tamaño la parte difícil deja de ser el prototipo:
-      son la evaluación, la gobernanza, el coste por consulta y qué ocurre cuando el sistema se equivoca delante de
-      mucha gente a la vez.
-    </p>
-    <p>
-      Ahora construyo producto propio. Las piezas de ingeniería son las mismas de siempre, definir bien el problema,
-      acotar el alcance y medir antes de celebrar, pero el ciclo es más corto y equivocarse sale más barato. Me
-      interesan los sitios donde el software se encuentra con trabajo físico y con normativa, porque son los sitios
-      donde el detalle importa y donde casi nadie quiere meterse.
-    </p>
-    <p>
-      Escribo aquí sobre lo que voy aprendiendo mientras construyo. Suele ser más concreto que general, y casi siempre
-      sale de algo que se rompió primero.
-    </p>
+    <div class="prosa">
+      <p class="revelar">
+        Empecé en ingeniería industrial, con el grado en mecánica y el máster en la Universidade de Vigo. Los primeros
+        años los pasé en CAD y CAE, simulando comportamiento estructural y térmico, imprimiendo prototipos y
+        acompañándolos por el ciclo completo hasta producción. También colaboré con la universidad en vibraciones
+        mecánicas. De ahí me quedó una costumbre que no he perdido: antes de defender un diseño, ensayarlo.
+      </p>
+      <p class="revelar">
+        El salto a producto llegó en Situm, una empresa de posicionamiento en interiores en A Coruña. Allí entendí que
+        una tecnología difícil no se vende explicando la tecnología, y que las decisiones de hoja de ruta aguantan mucho
+        mejor cuando salen de datos de uso que cuando salen de la última reunión. También me tocó formar en temas
+        técnicos a equipos de negocio, que es el examen más honesto que existe sobre si de verdad entiendes algo.
+      </p>
+      <p class="revelar">
+        En Ancora Mobile volví a la planta, esta vez con IA. Modelos aplicados a entornos industriales y cuadros de mando
+        en PowerBI para que las decisiones de operación salieran de los datos del turno y no de la memoria de alguien.
+        Aprendí que un cuadro de mando que nadie mira rara vez tiene un problema de visualización. Tiene un problema de a
+        quién le cambia la decisión.
+      </p>
+      <p class="revelar">
+        Después vino Inditex, en Arteixo, y con ello la escala. IA generativa, aprendizaje automático y procesamiento de
+        lenguaje natural sobre texto y voz. Trabajé en sistemas de conocimiento corporativo con bases de datos
+        vectoriales y en asistentes conversacionales internos. A ese tamaño la parte difícil deja de ser el prototipo:
+        son la evaluación, la gobernanza, el coste por consulta y qué ocurre cuando el sistema se equivoca delante de
+        mucha gente a la vez.
+      </p>
+      <p class="revelar">
+        Ahora construyo producto propio. Las piezas de ingeniería son las mismas de siempre, definir bien el problema,
+        acotar el alcance y medir antes de celebrar, pero el ciclo es más corto y equivocarse sale más barato. Me
+        interesan los sitios donde el software se encuentra con trabajo físico y con normativa, porque son los sitios
+        donde el detalle importa y donde casi nadie quiere meterse.
+      </p>
+      <p class="revelar">
+        Escribo aquí sobre lo que voy aprendiendo mientras construyo. Suele ser más concreto que general, y casi siempre
+        sale de algo que se rompió primero.
+      </p>
+    </div>
   </div>
 </Base>

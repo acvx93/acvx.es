@@ -1,6 +1,6 @@
 ---
 import { formatearFecha, type Idioma } from '../i18n/ui';
-import { urlDe, type Entrada } from '../lib/ensayos';
+import { slugDe, urlDe, type Entrada } from '../lib/ensayos';
 
 interface Props {
   entradas: Entrada[];
@@ -12,13 +12,20 @@ const { entradas, idioma } = Astro.props;
 
 <ul class="lista-ensayos">
   {
-    entradas.map((entrada) => (
-      <li>
-        <time class="entrada__fecha" datetime={entrada.data.fecha.toISOString().slice(0, 10)}>
-          {formatearFecha(entrada.data.fecha, idioma)}
-        </time>
-        <h3 class="entrada__titulo"><a href={urlDe(entrada)}>{entrada.data.titulo}</a></h3>
-        <p class="entrada__resumen">{entrada.data.descripcion}</p>
+    entradas.map((entrada, i) => (
+      <li class="entrada-ensayo revelar">
+        <a href={urlDe(entrada)}>
+          <span class="entrada-ensayo__indice">{String(i + 1).padStart(2, '0')}</span>
+          <span>
+            <h3 class="entrada-ensayo__titulo" style={`view-transition-name: ensayo-${slugDe(entrada)}`}>
+              {entrada.data.titulo}
+            </h3>
+            <p class="entrada-ensayo__resumen">{entrada.data.descripcion}</p>
+          </span>
+          <time class="entrada-ensayo__fecha" datetime={entrada.data.fecha.toISOString().slice(0, 10)}>
+            {formatearFecha(entrada.data.fecha, idioma)}
+          </time>
+        </a>
       </li>
     ))
   }

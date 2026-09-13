@@ -1,0 +1,42 @@
+---
+import { COTAS, UI, type Idioma } from '../i18n/ui';
+
+const { idioma } = Astro.props as { idioma: Idioma };
+const t = UI[idioma];
+const cotas = COTAS[idioma];
+---
+
+<section class="seccion trayectoria" data-trayectoria aria-labelledby="trayectoria">
+  <div class="envoltorio">
+    <div class="seccion__cabecera">
+      <h2 class="seccion__titulo revelar" id="trayectoria">{t.trayectoriaTitulo}</h2>
+      <p class="rotulo revelar">{t.trayectoriaRotulo}</p>
+    </div>
+
+    <div class="trayectoria__escena" data-escena>
+      <div class="trayectoria__eje" aria-hidden="true">
+        {
+          cotas.map((_, i) => (
+            <span class="trayectoria__marca" data-marca={i}>
+              {String(i + 1).padStart(2, '0')}
+            </span>
+          ))
+        }
+      </div>
+
+      <ol class="cotas">
+        {
+          cotas.map((cota, i) => (
+            <li class="cota" data-cota={i}>
+              <span class="cota__indice">{String(i + 1).padStart(2, '0')}</span>
+              <div class="cota__cuerpo">
+                <h3 class="cota__nombre">{cota.nombre}</h3>
+                <p class="cota__texto">{cota.texto}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>

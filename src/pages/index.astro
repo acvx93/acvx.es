@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import ListaEnsayos from '../components/ListaEnsayos.astro';
-import { RUTAS, UI } from '../i18n/ui';
+import Trayectoria from '../components/Trayectoria.astro';
+import { COORDENADA, RUTAS, UI } from '../i18n/ui';
 import { ensayosDe } from '../lib/ensayos';
 
 const idioma = 'es' as const;
@@ -16,20 +17,40 @@ const alternas = { es: RUTAS.es.inicio, en: RUTAS.en.inicio };
   idioma={idioma}
   alternas={alternas}
 >
-  <h1 class="declaracion">
-    Construyo sistemas de IA aplicada y, desde hace un tiempo, <span class="declaracion__acento">producto propio</span>.
-  </h1>
-  <p class="entradilla">
-    Soy Alejandro Couso, ingeniero industrial en A Coruña. Pasé por desarrollo de producto en Situm, por IA aplicada a
-    manufactura en Ancora Mobile y por IA generativa a escala en Inditex. Aquí escribo lo que aprendo construyendo.
-  </p>
+  <section class="entrada envoltorio">
+    <p class="rotulo entrada__coordenada revelar">{COORDENADA} · {t.lugar}</p>
+
+    <h1 class="nombre">
+      <span class="mascara"><i>Alejandro</i></span>
+      <span class="mascara"><i>Couso</i></span>
+    </h1>
+
+    <p class="entrada__declaracion revelar" data-retardo="0.15">
+      Construyo sistemas de IA aplicada y, desde hace un tiempo, <span class="entrada__acento">producto propio</span>.
+    </p>
+
+    <ul class="credenciales revelar" data-retardo="0.25">
+      {t.credenciales.map((credencial) => <li>{credencial}</li>)}
+    </ul>
+
+    <p class="rotulo aviso-scroll revelar" data-retardo="0.45">{t.trayectoriaRotulo}</p>
+  </section>
+
+  <Trayectoria idioma={idioma} />
 
   {
     ensayos.length > 0 && (
-      <section class="seccion">
-        <h2 class="seccion__titulo">{t.ultimosEnsayos}</h2>
+      <section class="seccion envoltorio" aria-labelledby="ensayos">
+        <div class="seccion__cabecera">
+          <h2 class="seccion__titulo revelar" id="ensayos">
+            {t.ultimosEnsayos}
+          </h2>
+          <p class="rotulo revelar">{t.escrituraRotulo}</p>
+        </div>
         <ListaEnsayos entradas={ensayos} idioma={idioma} />
-        <a class="enlace-mas" href={RUTAS.es.ensayos}>{t.todosLosEnsayos}</a>
+        <a class="enlace-mas revelar" href={RUTAS.es.ensayos}>
+          {t.todosLosEnsayos}
+        </a>
       </section>
     )
   }

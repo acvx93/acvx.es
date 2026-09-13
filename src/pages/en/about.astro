@@ -1,53 +1,56 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { RUTAS } from '../../i18n/ui';
+import { RUTAS, UI } from '../../i18n/ui';
 
 const idioma = 'en' as const;
+const t = UI[idioma];
 const alternas = { es: RUTAS.es.sobre, en: RUTAS.en.sobre };
-const descripcion =
-  'The path from mechanical engineering to building my own products, and what each jump taught me.';
+const descripcion = 'The path from mechanical engineering to building my own products, and what each jump taught me.';
 ---
 
 <Base titulo="About" descripcion={descripcion} idioma={idioma} alternas={alternas}>
-  <header class="cabecera-pagina">
-    <h1>About</h1>
-    <p class="cabecera-pagina__descripcion">{descripcion}</p>
-  </header>
+  <div class="envoltorio">
+    <header class="cabecera-pagina">
+      <p class="rotulo">{t.navSobre}</p>
+      <h1>An engineer who builds, and writes about what broke first.</h1>
+      <p class="cabecera-pagina__descripcion">{descripcion}</p>
+    </header>
 
-  <div class="prosa">
-    <p>
-      I started in industrial engineering, with a mechanical degree and a master's at the Universidade de Vigo. My first
-      years went into CAD and CAE, simulating structural and thermal behaviour, printing prototypes and walking them
-      through the full cycle into production. I also worked with the university on mechanical vibration. One habit
-      stuck from those years: before defending a design, test it.
-    </p>
-    <p>
-      The jump into product came at Situm, an indoor positioning company in A Coruña. That is where I learned that hard
-      technology does not sell by explaining the technology, and that roadmap decisions hold up far better when they
-      come from usage data than from the most recent meeting. I also had to teach technical material to business teams,
-      which is the most honest exam there is on whether you actually understand something.
-    </p>
-    <p>
-      At Ancora Mobile I went back to the factory floor, this time with AI. Models applied to industrial environments,
-      and PowerBI dashboards so that operating decisions came from the data of the current shift rather than from
-      somebody's memory. I learned that a dashboard nobody looks at rarely has a visualisation problem. It has a
-      problem with whose decision it changes.
-    </p>
-    <p>
-      Then came Inditex, in Arteixo, and with it scale. Generative AI, machine learning, and natural language
-      processing over text and voice. I worked on corporate knowledge systems backed by vector databases and on
-      internal conversational assistants. At that size the hard part stops being the prototype. It becomes evaluation,
-      governance, cost per query, and what happens when the system is wrong in front of many people at once.
-    </p>
-    <p>
-      Now I build my own products. The engineering pieces are the same as always, define the problem properly, bound
-      the scope, measure before celebrating, but the cycle is shorter and being wrong is cheaper. I am drawn to places
-      where software meets physical work and regulation, because that is where detail matters and where almost nobody
-      wants to go.
-    </p>
-    <p>
-      I write here about what I learn while building. It tends to be specific rather than general, and it almost always
-      comes out of something that broke first.
-    </p>
+    <div class="prosa">
+      <p class="revelar">
+        I started in industrial engineering, with a mechanical degree and a master's at the Universidade de Vigo. My
+        first years went into CAD and CAE, simulating structural and thermal behaviour, printing prototypes and walking
+        them through the full cycle into production. I also worked with the university on mechanical vibration. One
+        habit stuck from those years: before defending a design, test it.
+      </p>
+      <p class="revelar">
+        The jump into product came at Situm, an indoor positioning company in A Coruña. That is where I learned that
+        hard technology does not sell by explaining the technology, and that roadmap decisions hold up far better when
+        they come from usage data than from the most recent meeting. I also had to teach technical material to business
+        teams, which is the most honest exam there is on whether you actually understand something.
+      </p>
+      <p class="revelar">
+        At Ancora Mobile I went back to the factory floor, this time with AI. Models applied to industrial environments,
+        and PowerBI dashboards so that operating decisions came from the data of the current shift rather than from
+        somebody's memory. I learned that a dashboard nobody looks at rarely has a visualisation problem. It has a
+        problem with whose decision it changes.
+      </p>
+      <p class="revelar">
+        Then came Inditex, in Arteixo, and with it scale. Generative AI, machine learning, and natural language
+        processing over text and voice. I worked on corporate knowledge systems backed by vector databases and on
+        internal conversational assistants. At that size the hard part stops being the prototype. It becomes evaluation,
+        governance, cost per query, and what happens when the system is wrong in front of many people at once.
+      </p>
+      <p class="revelar">
+        Now I build my own products. The engineering pieces are the same as always, define the problem properly, bound
+        the scope, measure before celebrating, but the cycle is shorter and being wrong is cheaper. I am drawn to places
+        where software meets physical work and regulation, because that is where detail matters and where almost nobody
+        wants to go.
+      </p>
+      <p class="revelar">
+        I write here about what I learn while building. It tends to be specific rather than general, and it almost
+        always comes out of something that broke first.
+      </p>
+    </div>
   </div>
 </Base>

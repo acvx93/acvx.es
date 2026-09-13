@@ -5,16 +5,17 @@ import { RUTAS, UI, type Idioma } from '../i18n/ui';
 const { idioma } = Astro.props as { idioma: Idioma };
 const t = UI[idioma];
 const r = RUTAS[idioma];
+const anio = new Date().getFullYear();
 ---
 
 <footer class="pie">
   <div class="envoltorio pie__fila">
-    <p>
-      {t.escribeme} <a href={`mailto:${SITIO.correo}`}>{SITIO.correo}</a>
-    </p>
+    <p class="rotulo">{`43.3623 N · 8.4115 W`}</p>
     <div class="pie__enlaces">
+      <a href={`mailto:${SITIO.correo}`}>{SITIO.correo}</a>
       <a href={SITIO.linkedin} rel="me noopener">LinkedIn</a>
       <a href={r.rss}>{t.feed}</a>
     </div>
+    <p class="rotulo">{`${SITIO.nombre} · ${anio}`}</p>
   </div>
 </footer>
