@@ -1,18 +1,16 @@
 /* Tokens ------------------------------------------------------------------ */
 
 :root {
-  --fondo: #fafafb;
+  --fondo: #ffffff;
   --superficie: #ffffff;
   --tinta: #0e1014;
-  --tinta-atenuada: #5a6068;
-  --tinta-tenue: #6b7179;
+  --tinta-atenuada: #61594f;
+  --tinta-tenue: #6a6054;
   --linea: rgba(14, 16, 20, 0.14);
   --linea-tenue: rgba(14, 16, 20, 0.07);
-  --acento: #0e7490;
-  --acento-suave: rgba(14, 116, 144, 0.08);
+  --acento: #995500;
+  --acento-suave: rgba(232, 145, 5, 0.08);
   --grano: 0.022;
-  --malla: #0e1014;
-  --malla-fuerza: 0.2;
 
   --fuente-texto: "Titillium Web", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --fuente-titulo: "Google Sans Flex", "Titillium Web", sans-serif;
@@ -29,35 +27,31 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="light"]) {
-    --fondo: #07080b;
-    --superficie: #0e1014;
+    --fondo: #080000;
+    --superficie: #130c07;
     --tinta: #f2f3f5;
-    --tinta-atenuada: #8a919c;
-    --tinta-tenue: #787f8a;
+    --tinta-atenuada: #b2aba1;
+    --tinta-tenue: #a59c8e;
     --linea: rgba(242, 243, 245, 0.13);
     --linea-tenue: rgba(242, 243, 245, 0.06);
-    --acento: #6ee7ff;
-    --acento-suave: rgba(110, 231, 255, 0.1);
-    --grano: 0.04;
-    --malla: #f2f3f5;
-    --malla-fuerza: 0.38;
+    --acento: #f5a305;
+    --acento-suave: rgba(232, 145, 5, 0.1);
+    --grano: 0.025;
     color-scheme: dark;
   }
 }
 
 :root[data-tema="dark"] {
-  --fondo: #07080b;
-  --superficie: #0e1014;
+  --fondo: #080000;
+  --superficie: #130c07;
   --tinta: #f2f3f5;
-  --tinta-atenuada: #8a919c;
-  --tinta-tenue: #787f8a;
+  --tinta-atenuada: #b2aba1;
+  --tinta-tenue: #a59c8e;
   --linea: rgba(242, 243, 245, 0.13);
   --linea-tenue: rgba(242, 243, 245, 0.06);
-  --acento: #6ee7ff;
-  --acento-suave: rgba(110, 231, 255, 0.1);
-  --grano: 0.04;
-  --malla: #f2f3f5;
-  --malla-fuerza: 0.38;
+  --acento: #f5a305;
+  --acento-suave: rgba(232, 145, 5, 0.1);
+  --grano: 0.025;
   color-scheme: dark;
 }
 
@@ -135,14 +129,14 @@ pre code {
   padding: 0;
 }
 
-/* Fondo: malla, grano y retícula ------------------------------------------ */
+/* Fondo: fragmentos con profundidad y grano ------------------------------- */
 
 .lienzo {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -3;
+  z-index: 0;
   display: block;
   pointer-events: none;
   opacity: 0;
@@ -156,43 +150,16 @@ pre code {
 .grano {
   position: fixed;
   inset: -100px;
-  z-index: -2;
+  z-index: 1;
   pointer-events: none;
   opacity: var(--grano);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.reticula {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  width: 100%;
-  max-width: var(--ancho);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.reticula i {
-  border-left: 1px solid var(--linea-tenue);
-  transform: scaleY(0);
-  transform-origin: top;
-}
-
-.reticula i:last-child {
-  border-right: 1px solid var(--linea-tenue);
-}
-
-html:not(.js-listo) .reticula i {
-  transform: none;
-}
-
-@media (max-width: 48rem) {
-  .reticula {
-    grid-template-columns: repeat(2, 1fr);
-  }
+main,
+.pie {
+  position: relative;
+  z-index: 2;
 }
 
 /* Estructura -------------------------------------------------------------- */
@@ -248,24 +215,26 @@ html:not(.js-listo) .reticula i {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--linea-tenue);
-  backdrop-filter: blur(14px);
-  background: color-mix(in srgb, var(--fondo) 70%, transparent);
+  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--fondo) 20%, transparent);
 }
 
 .cabecera__fila {
+  max-width: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
   padding-block: 1rem;
+  padding-inline: clamp(1.25rem, 2vw, 2rem);
 }
 
 .marca {
-  font-family: var(--fuente-titulo);
-  font-variation-settings: "ROND" 0;
+  font-family: var(--fuente-texto);
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: -0.02em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
 
@@ -651,21 +620,11 @@ html:not(.js-listo) .reticula i {
   align-items: baseline;
   padding-block: clamp(1.4rem, 3.5vh, 2.1rem);
   position: relative;
-  isolation: isolate;
+  transition: background-color 260ms var(--curva);
 }
 
-.entrada-ensayo > a::before {
-  content: "";
-  position: absolute;
-  inset: 0 calc(var(--gutter) * -0.5);
-  background: var(--acento-suave);
-  opacity: 0;
-  transition: opacity 260ms var(--curva);
-  z-index: -1;
-}
-
-.entrada-ensayo > a:hover::before {
-  opacity: 1;
+.entrada-ensayo > a:hover {
+  background-color: var(--acento-suave);
 }
 
 .entrada-ensayo__indice {
@@ -774,11 +733,23 @@ html:not(.js-listo) .reticula i {
   top: 0;
   left: 0;
   height: 2px;
-  width: 100%;
+  width: 0;
   background: var(--acento);
-  transform: scaleX(0);
-  transform-origin: left;
   z-index: 20;
+  will-change: width;
+}
+
+.progreso::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 3.5rem;
+  height: 1.35rem;
+  transform: translate(50%, -50%);
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--acento) 88%, transparent) 0%, transparent 72%);
+  filter: blur(1.5px);
+  pointer-events: none;
 }
 
 .prosa {
@@ -916,8 +887,7 @@ html.js-listo .mascara > i {
   }
 
   html.js-listo .revelar,
-  html.js-listo .mascara > i,
-  .reticula i {
+  html.js-listo .mascara > i {
     opacity: 1 !important;
     transform: none !important;
   }
@@ -927,7 +897,6 @@ html.js-listo .mascara > i {
     --peso: 700;
   }
 
-  .lienzo,
   .grano {
     display: none !important;
   }

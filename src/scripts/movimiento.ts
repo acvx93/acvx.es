@@ -11,6 +11,12 @@ declare global {
 const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const raiz = document.documentElement;
 
+// También se dibuja una composición estática con movimiento reducido.
+const lienzo = document.querySelector<HTMLCanvasElement>('.lienzo');
+if (lienzo) {
+  import('./fondo').then((modulo) => modulo.montarFondo(lienzo)).catch(() => undefined);
+}
+
 function rendirse() {
   raiz.classList.remove('js-listo');
   window.__movimientoListo = true;
@@ -35,15 +41,6 @@ function arrancar() {
   gsap.ticker.lagSmoothing(0);
 
   const curva = 'power3.out';
-
-  /* Retícula: las líneas se trazan */
-  gsap.to('.reticula i', {
-    scaleY: 1,
-    duration: 1.6,
-    ease: 'power2.inOut',
-    stagger: 0.07,
-    delay: 0.1,
-  });
 
   /* Entrada: el nombre se entinta */
   const nombre = document.querySelector<HTMLElement>('.nombre');
@@ -129,18 +126,10 @@ function arrancar() {
   const articulo = document.querySelector<HTMLElement>('.prosa');
   if (progreso && articulo) {
     gsap.to(progreso, {
-      scaleX: 1,
+      width: '100%',
       ease: 'none',
       scrollTrigger: { trigger: articulo, start: 'top top', end: 'bottom bottom', scrub: 0.3 },
     });
-  }
-
-  /* Fondo por shader, en su propio trozo y sin bloquear nada */
-  const lienzo = document.querySelector<HTMLCanvasElement>('.lienzo');
-  if (lienzo && window.innerWidth > 480) {
-    import('./fondo')
-      .then((modulo) => modulo.montarFondo(lienzo))
-      .catch(() => undefined);
   }
 
   window.__movimientoListo = true;
