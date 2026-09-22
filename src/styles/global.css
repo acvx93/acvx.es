@@ -258,7 +258,8 @@ main,
   transition: color var(--rapido) var(--curva);
 }
 
-.navegacion a::after {
+.navegacion a::after,
+.navegacion .boton-icono::after {
   content: "";
   position: absolute;
   left: 0;
@@ -277,6 +278,7 @@ main,
 }
 
 .navegacion a:hover::after,
+.navegacion .boton-icono:hover::after,
 .navegacion a[aria-current="page"]::after {
   transform: scaleX(1);
 }
@@ -311,9 +313,27 @@ main,
   border-color: var(--acento);
 }
 
+.navegacion .boton-icono {
+  position: relative;
+}
+
+.navegacion .boton-icono:hover {
+  color: var(--tinta);
+}
+
 .boton-icono svg {
   width: 0.95rem;
   height: 0.95rem;
+}
+
+.boton-icono .tema-icono {
+  display: none;
+}
+
+:root:not([data-tema="light"]):not([data-tema="dark"]) .tema-icono--auto,
+:root[data-tema="light"] .tema-icono--light,
+:root[data-tema="dark"] .tema-icono--dark {
+  display: block;
 }
 
 /* Entrada ----------------------------------------------------------------- */
