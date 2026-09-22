@@ -63,16 +63,20 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
   let intervalo = 1000 / FPS, destruido = false;
   const raton = { x: 0, y: 0, destinoX: 0, destinoY: 0 };
   const escala = () => Math.min(ancho, alto * 1.3);
-  const origenX = () => ancho * (ancho < 700 ? 0.96 : 0.78);
+  const origenX = () => ancho * (ancho < 700 ? 0.74 : 0.78);
 
   function atenuacion(x: number) {
-    const paradas = [[0, 0.035], [0.48, 0.065], [0.66, 0.3], [0.82, 0.95], [1, 0.5]];
+    // En móvil la nube entra en pantalla y conserva contraste propio:
+    // no se multiplica otra vez por una opacidad global casi invisible.
+    const paradas = ancho < 700
+      ? [[0, 0.06], [0.48, 0.2], [0.66, 0.55], [0.82, 0.8], [1, 0.55]]
+      : [[0, 0.035], [0.48, 0.065], [0.66, 0.3], [0.82, 0.95], [1, 0.5]];
     const posicion = Math.max(0, Math.min(1, x / ancho));
     for (let i = 1; i < paradas.length; i++) {
       const a = paradas[i - 1], b = paradas[i];
       if (posicion <= b[0]) {
         const mezcla = (posicion - a[0]) / (b[0] - a[0]);
-        return (a[1] + (b[1] - a[1]) * mezcla) * (ancho < 700 ? 0.24 : 1);
+        return a[1] + (b[1] - a[1]) * mezcla;
       }
     }
     return 0;
@@ -101,7 +105,8 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
         const color = oscuro
           ? (azul ? '70,99,109' : negra ? '8,0,0' : brillo > 0.88 ? '245,163,5' : brillo > 0.58 ? '232,145,5' : '74,39,0')
           : (azul ? '103,122,127' : negra ? '94,68,40' : brillo > 0.65 ? '232,145,5' : '150,107,51');
-        const alfa = oscuro ? (negra ? 0.78 : 0.13 + brillo * 0.2) : 0.055 + brillo * 0.085;
+        const alfa = oscuro ? (negra ? 0.78 : 0.13 + brillo * 0.2)
+          : ancho < 700 ? 0.12 + brillo * 0.16 : 0.055 + brillo * 0.085;
         s.beginPath();
         s.moveTo(0, 0);
         s.lineTo(a[0], a[1]);
@@ -208,8 +213,10 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     reanudar();
   }
   function redimensionar() {
-    ancho = window.innerWidth;
-    alto = window.innerHeight;
+    const nuevoAncho = canvas.clientWidth, nuevoAlto = canvas.clientHeight;
+    if (nuevoAncho === ancho && nuevoAlto === alto) return;
+    ancho = nuevoAncho;
+    alto = nuevoAlto;
     resolucion = Math.min(1, window.devicePixelRatio || 1, Math.sqrt(MAX_PIXELES / (ancho * alto)));
     canvas.width = Math.max(1, Math.floor(ancho * resolucion));
     canvas.height = Math.max(1, Math.floor(alto * resolucion));
@@ -218,11 +225,14 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     reanudar();
   }
   function alRedimensionar() {
-    parar();
+    // La barra de direcciones y el teclado cambian innerHeight al deslizar.
+    // El lienzo usa lvh: solo regeneramos texturas si cambia su tamaño real.
+    if (canvas.clientWidth === ancho && canvas.clientHeight === alto) return;
     window.clearTimeout(cambioTamano);
     cambioTamano = window.setTimeout(redimensionar, 120);
   }
   function mover(evento: PointerEvent) {
+    if (evento.pointerType !== 'mouse') return;
     raton.destinoX = evento.clientX / ancho - 0.5;
     raton.destinoY = evento.clientY / alto - 0.5;
   }
