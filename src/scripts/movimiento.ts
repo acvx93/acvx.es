@@ -80,6 +80,7 @@ function arrancar() {
   /* Trayectoria: se fija y las cotas avanzan de una en una */
   const trayectoria = document.querySelector<HTMLElement>('[data-trayectoria]');
   const escena = trayectoria?.querySelector<HTMLElement>('[data-escena]');
+  const introduccion = escena?.querySelector<HTMLElement>('[data-introduccion]');
   const cotas = escena ? Array.from(escena.querySelectorAll<HTMLElement>('[data-cota]')) : [];
   const marcas = escena ? Array.from(escena.querySelectorAll<HTMLElement>('[data-marca]')) : [];
 
@@ -90,24 +91,44 @@ function arrancar() {
     const activar = (indice: number) => {
       if (indice === activa) return;
       activa = indice;
-      cotas.forEach((cota, i) => cota.toggleAttribute('data-activa', i === indice));
-      marcas.forEach((marca, i) => marca.toggleAttribute('data-activa', i <= indice));
+      introduccion?.toggleAttribute('data-activa', indice === 0);
+      cotas.forEach((cota, i) => cota.toggleAttribute('data-activa', i === indice - 1));
+      marcas.forEach((marca, i) => marca.toggleAttribute('data-activa', i < indice));
     };
     activar(0);
 
-    ScrollTrigger.create({
+    const etapas = cotas.length + 1;
+
+    const disparador = ScrollTrigger.create({
       trigger: escena,
       start: 'top top',
-      end: () => '+=' + window.innerHeight * (cotas.length - 0.35),
+      end: () => '+=' + window.innerHeight * (etapas - 1),
       pin: true,
       pinSpacing: true,
-      scrub: true,
+      scrub: 0.22,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        const indice = Math.min(cotas.length - 1, Math.floor(self.progress * cotas.length));
+        const indice = Math.min(etapas - 1, Math.round(self.progress * (etapas - 1)));
         activar(Math.max(0, indice));
       },
     });
+
+    // Dentro de la escena, una rueda equivale a un tramo. Así el cambio se
+    // percibe como una pantalla nueva y no como un pin estático a medio camino.
+    let bloqueado = false;
+    const avanzar = (evento: WheelEvent) => {
+      if (!disparador.isActive || evento.ctrlKey || Math.abs(evento.deltaY) < 4) return;
+      const direccion = Math.sign(evento.deltaY);
+      const siguiente = Math.max(0, Math.min(etapas - 1, activa + direccion));
+      if (siguiente === activa) return;
+      evento.preventDefault();
+      if (bloqueado) return;
+      bloqueado = true;
+      const destino = disparador.start + (disparador.end - disparador.start) * (siguiente / (etapas - 1));
+      lenis.scrollTo(destino, { duration: 0.58, lock: true });
+      window.setTimeout(() => { bloqueado = false; }, 620);
+    };
+    window.addEventListener('wheel', avanzar, { capture: true, passive: false });
   } else if (cotas.length) {
     cotas.forEach((cota, i) => {
       gsap.from(cota, {

@@ -74,9 +74,11 @@ for (const theme of ['light', 'dark']) {
     const { w, doc, canvas, stats, advance } = e;
     const allocations = e.allocations(), fills = stats.fills, filters = stats.filters;
     const frames = stats.frames;
-    // Simula los resize sucesivos de las barras/teclado, sin cambiar 100lvh.
+    // Simula los resize sucesivos de las barras/teclado, también cuando el
+    // navegador reporta un alto de layout diferente del lienzo inicial.
     for (const height of [800, 760, 700, 844, 500, 844]) {
       w.innerHeight = height;
+      canvas.clientHeight = height;
       w.dispatchEvent(new Event('resize'));
       advance(80);
     }
@@ -91,7 +93,7 @@ for (const theme of ['light', 'dark']) {
     // Un resize real (p. ej. giro) sí actualiza composición y presupuesto.
     canvas.clientWidth = w.innerWidth = 844;
     canvas.clientHeight = w.innerHeight = 390;
-    w.dispatchEvent(new Event('resize')); advance(200);
+    w.dispatchEvent(new Event('orientationchange')); advance(200);
     assert.equal(canvas.width, 844); assert.equal(canvas.height, 390);
     assert.ok(e.allocations() > allocations);
 

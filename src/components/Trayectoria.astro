@@ -8,11 +8,6 @@ const cotas = COTAS[idioma];
 
 <section class="seccion trayectoria" data-trayectoria aria-labelledby="trayectoria">
   <div class="envoltorio">
-    <div class="seccion__cabecera">
-      <h2 class="seccion__titulo revelar" id="trayectoria">{t.trayectoriaTitulo}</h2>
-      <p class="rotulo revelar">{t.trayectoriaRotulo}</p>
-    </div>
-
     <div class="trayectoria__escena" data-escena>
       <div class="trayectoria__eje" aria-hidden="true">
         {
@@ -22,6 +17,11 @@ const cotas = COTAS[idioma];
             </span>
           ))
         }
+      </div>
+
+      <div class="seccion__cabecera trayectoria__introduccion" data-introduccion>
+        <h2 class="seccion__titulo" id="trayectoria">{t.trayectoriaTitulo}</h2>
+        <p class="rotulo">{t.trayectoriaRotulo}</p>
       </div>
 
       <ol class="cotas">

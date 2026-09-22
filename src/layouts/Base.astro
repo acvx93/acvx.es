@@ -22,7 +22,7 @@ interface Props {
 const { titulo, descripcion, idioma, alternas = {}, tipo = 'website', fecha, progreso = false } = Astro.props;
 
 const canonica = new URL(Astro.url.pathname, Astro.site).href;
-const og = new URL('/og.png', Astro.site).href;
+const og = new URL('/og-alejandro-couso.png', Astro.site).href;
 const tituloCompleto = titulo === 'acvx.es' ? titulo : `${titulo} · acvx.es`;
 const t = UI[idioma];
 ---
@@ -104,8 +104,8 @@ const t = UI[idioma];
     <meta name="twitter:description" content={descripcion} />
     <meta name="twitter:image" content={og} />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
     <meta name="author" content={SITIO.nombre} />
     <link rel="sitemap" href="/sitemap.xml" />
   </head>

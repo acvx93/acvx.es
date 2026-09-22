@@ -226,10 +226,17 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
   }
   function alRedimensionar() {
     // La barra de direcciones y el teclado cambian innerHeight al deslizar.
+    // En móvil ignoramos también los cambios del layout: pueden alternar lvh
+    // según aparece la barra del navegador y reordenarían la composición.
+    if (ancho < 700) return;
     // El lienzo usa lvh: solo regeneramos texturas si cambia su tamaño real.
     if (canvas.clientWidth === ancho && canvas.clientHeight === alto) return;
     window.clearTimeout(cambioTamano);
     cambioTamano = window.setTimeout(redimensionar, 120);
+  }
+  function alGirar() {
+    window.clearTimeout(cambioTamano);
+    cambioTamano = window.setTimeout(redimensionar, 160);
   }
   function mover(evento: PointerEvent) {
     if (evento.pointerType !== 'mouse') return;
@@ -242,6 +249,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     parar();
     window.clearTimeout(cambioTamano);
     window.removeEventListener('resize', alRedimensionar);
+    window.removeEventListener('orientationchange', alGirar);
     window.removeEventListener('pointermove', mover);
     window.removeEventListener('pagehide', alSalir);
     window.removeEventListener('pageshow', reanudar);
@@ -261,6 +269,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
   redimensionar();
   canvas.classList.add('visible');
   window.addEventListener('resize', alRedimensionar, { passive: true });
+  window.addEventListener('orientationchange', alGirar, { passive: true });
   window.addEventListener('pointermove', mover, { passive: true });
   window.addEventListener('pagehide', alSalir);
   window.addEventListener('pageshow', reanudar);
