@@ -29,6 +29,7 @@ const t = UI[idioma];
     if (boton) {
       const raiz = document.documentElement;
       const sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+      const esMovil = () => window.matchMedia('(max-width: 699px), (hover: none) and (pointer: coarse)').matches;
       const modoActual = () => raiz.dataset.tema === 'light' || raiz.dataset.tema === 'dark'
         ? raiz.dataset.tema
         : sistemaOscuro.matches ? 'dark' : 'light';
@@ -45,11 +46,19 @@ const t = UI[idioma];
         raiz.dataset.tema = modoActual() === 'dark' ? 'light' : 'dark';
         try {
           localStorage.setItem('tema', raiz.dataset.tema);
+          if (esMovil()) localStorage.setItem('tema-sistema', sistemaOscuro.matches ? 'dark' : 'light');
         } catch (e) {}
         actualizarEtiqueta();
       });
       sistemaOscuro.addEventListener('change', () => {
-        if (!raiz.dataset.tema) actualizarEtiqueta();
+        if (esMovil()) {
+          delete raiz.dataset.tema;
+          try {
+            localStorage.removeItem('tema');
+            localStorage.setItem('tema-sistema', sistemaOscuro.matches ? 'dark' : 'light');
+          } catch (e) {}
+        }
+        actualizarEtiqueta();
       });
     }
   }

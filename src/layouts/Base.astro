@@ -38,6 +38,14 @@ const t = UI[idioma];
 
     <script is:inline>
       try {
+        const movil = window.matchMedia('(max-width: 699px), (hover: none) and (pointer: coarse)').matches;
+        if (movil) {
+          const sistema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          const sistemaAnterior = localStorage.getItem('tema-sistema');
+          // En móvil, un cambio del dispositivo prevalece sobre la última elección manual.
+          if (sistemaAnterior && sistemaAnterior !== sistema) localStorage.removeItem('tema');
+          localStorage.setItem('tema-sistema', sistema);
+        }
         const elegido = localStorage.getItem('tema');
         if (elegido === 'light' || elegido === 'dark') {
           document.documentElement.dataset.tema = elegido;
