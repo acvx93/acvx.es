@@ -9,21 +9,16 @@ const t = UI[idioma];
   class="boton-icono"
   type="button"
   data-tema-boton
-  data-etiqueta-auto={t.temaAutomatico}
   data-etiqueta-light={t.temaClaro}
   data-etiqueta-dark={t.temaOscuro}
-  aria-label={t.temaAutomatico}
-  title={t.temaAutomatico}
+  aria-label={t.temaOscuro}
+  title={t.temaOscuro}
 >
-  <svg class="tema-icono tema-icono--auto" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-    <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
-    <path d="M8 1.75A6.25 6.25 0 0 1 8 14.25Z" fill="currentColor"></path>
-  </svg>
-  <svg class="tema-icono tema-icono--light" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+  <svg class="tema-icono tema-icono--sol" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
     <circle cx="8" cy="8" r="2.6" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
     <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13m7.64 7.64 1.13 1.13m0-9.9-1.13 1.13m-7.64 7.64-1.13 1.13" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path>
   </svg>
-  <svg class="tema-icono tema-icono--dark" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+  <svg class="tema-icono tema-icono--luna" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
     <path d="M12.8 10.9A5.8 5.8 0 0 1 5.1 3.2 5.8 5.8 0 1 0 12.8 10.9Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"></path>
   </svg>
 </button>
@@ -33,10 +28,13 @@ const t = UI[idioma];
     const boton = document.querySelector('[data-tema-boton]');
     if (boton) {
       const raiz = document.documentElement;
-      const modos = ['auto', 'light', 'dark'];
-      const modoActual = () => raiz.dataset.tema === 'light' || raiz.dataset.tema === 'dark' ? raiz.dataset.tema : 'auto';
+      const sistemaOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+      const modoActual = () => raiz.dataset.tema === 'light' || raiz.dataset.tema === 'dark'
+        ? raiz.dataset.tema
+        : sistemaOscuro.matches ? 'dark' : 'light';
       const actualizarEtiqueta = () => {
-        const etiqueta = boton.getAttribute('data-etiqueta-' + modoActual());
+        const siguiente = modoActual() === 'dark' ? 'light' : 'dark';
+        const etiqueta = boton.getAttribute('data-etiqueta-' + siguiente);
         if (etiqueta) {
           boton.setAttribute('aria-label', etiqueta);
           boton.setAttribute('title', etiqueta);
@@ -44,14 +42,14 @@ const t = UI[idioma];
       };
       actualizarEtiqueta();
       boton.addEventListener('click', () => {
-        const siguiente = modos[(modos.indexOf(modoActual()) + 1) % modos.length];
-        if (siguiente === 'auto') delete raiz.dataset.tema;
-        else raiz.dataset.tema = siguiente;
+        raiz.dataset.tema = modoActual() === 'dark' ? 'light' : 'dark';
         try {
-          if (siguiente === 'auto') localStorage.removeItem('tema');
-          else localStorage.setItem('tema', siguiente);
+          localStorage.setItem('tema', raiz.dataset.tema);
         } catch (e) {}
         actualizarEtiqueta();
+      });
+      sistemaOscuro.addEventListener('change', () => {
+        if (!raiz.dataset.tema) actualizarEtiqueta();
       });
     }
   }

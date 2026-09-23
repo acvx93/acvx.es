@@ -35,7 +35,7 @@ if (quieto) {
 function arrancar() {
   gsap.registerPlugin(ScrollTrigger);
 
-  const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+  const lenis = new Lenis({ duration: 0.55, smoothWheel: true });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((tiempo) => lenis.raf(tiempo * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -45,25 +45,25 @@ function arrancar() {
   /* Entrada: el nombre se entinta */
   const nombre = document.querySelector<HTMLElement>('.nombre');
   if (nombre) {
-    const linea = gsap.timeline({ delay: 0.25 });
+    const linea = gsap.timeline({ delay: 0.08 });
     linea
       .to(nombre.querySelectorAll('.mascara > i'), {
         y: '0%',
-        duration: 1.15,
+        duration: 0.65,
         ease: curva,
-        stagger: 0.09,
+        stagger: 0.05,
       })
       .to(
         nombre,
-        { '--rond': 0, '--peso': 700, duration: 1.5, ease: 'power2.inOut' },
-        0.25,
+        { '--rond': 0, '--peso': 700, duration: 0.8, ease: 'power2.inOut' },
+        0.08,
       );
   }
 
   /* Revelados generales */
   const revelables = gsap.utils.toArray<HTMLElement>('.revelar');
   revelables.forEach((elemento) => {
-    const comun = { opacity: 1, y: 0, duration: 0.95, ease: curva };
+    const comun = { opacity: 1, y: 0, duration: 0.5, ease: curva };
     const yaVisible = elemento.getBoundingClientRect().top < window.innerHeight;
 
     if (yaVisible) {
@@ -105,7 +105,7 @@ function arrancar() {
       end: () => '+=' + window.innerHeight * (etapas - 1),
       pin: true,
       pinSpacing: true,
-      scrub: 0.22,
+      scrub: 0.1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         const indice = Math.min(etapas - 1, Math.round(self.progress * (etapas - 1)));
@@ -113,20 +113,43 @@ function arrancar() {
       },
     });
 
-    // Dentro de la escena, una rueda equivale a un tramo. Así el cambio se
-    // percibe como una pantalla nueva y no como un pin estático a medio camino.
-    let bloqueado = false;
+    // Una rueda avanza una pantalla de toda la portada: entrada, introducción,
+    // cada cota y ensayos. El objetivo se conserva durante la transición para
+    // que los giros consecutivos no tengan que esperar a la animación anterior.
+    const ensayos = trayectoria.nextElementSibling as HTMLElement | null;
+    const anclas = () => {
+      const maximo = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const paso = (disparador.end - disparador.start) / (etapas - 1);
+      const destinos = [0, ...Array.from({ length: etapas }, (_, i) => disparador.start + paso * i)];
+      if (ensayos) destinos.push(window.scrollY + ensayos.getBoundingClientRect().top);
+      destinos.push(maximo);
+      return destinos.map((valor) => Math.min(maximo, Math.max(0, valor)))
+        .filter((valor, i, lista) => i === 0 || valor - lista[i - 1] > 80);
+    };
+    let objetivo = 0;
+    let ultimoPaso = 0;
+    let acumulado = 0;
     const avanzar = (evento: WheelEvent) => {
-      if (!disparador.isActive || evento.ctrlKey || Math.abs(evento.deltaY) < 4) return;
-      const direccion = Math.sign(evento.deltaY);
-      const siguiente = Math.max(0, Math.min(etapas - 1, activa + direccion));
-      if (siguiente === activa) return;
+      if (evento.ctrlKey || evento.defaultPrevented || evento.deltaY === 0) return;
+      if (evento.target instanceof Element && evento.target.closest('dialog, [data-scroll-libre]')) return;
       evento.preventDefault();
-      if (bloqueado) return;
-      bloqueado = true;
-      const destino = disparador.start + (disparador.end - disparador.start) * (siguiente / (etapas - 1));
-      lenis.scrollTo(destino, { duration: 0.58, lock: true });
-      window.setTimeout(() => { bloqueado = false; }, 620);
+      // Lenis no consulta defaultPrevented: si recibe esta misma rueda, suma
+      // su delta al salto y la página acaba entre dos pantallas.
+      evento.stopImmediatePropagation();
+      const ahora = performance.now();
+      const destinos = anclas();
+      if (ahora - ultimoPaso > 420) {
+        objetivo = destinos.reduce((mejor, valor, i) =>
+          Math.abs(valor - window.scrollY) < Math.abs(destinos[mejor] - window.scrollY) ? i : mejor, 0);
+        acumulado = 0;
+      }
+      const delta = evento.deltaY * (evento.deltaMode === 1 ? 16 : evento.deltaMode === 2 ? window.innerHeight : 1);
+      acumulado = Math.sign(delta) === Math.sign(acumulado) ? acumulado + delta : delta;
+      if (Math.abs(acumulado) < 70) return;
+      acumulado = 0;
+      objetivo = Math.max(0, Math.min(destinos.length - 1, objetivo + Math.sign(delta)));
+      ultimoPaso = ahora;
+      lenis.scrollTo(destinos[objetivo], { duration: 0.32 });
     };
     window.addEventListener('wheel', avanzar, { capture: true, passive: false });
   } else if (cotas.length) {
@@ -134,7 +157,7 @@ function arrancar() {
       gsap.from(cota, {
         opacity: 0,
         y: 28,
-        duration: 0.85,
+        duration: 0.5,
         ease: curva,
         delay: i * 0.04,
         scrollTrigger: { trigger: cota, start: 'top 88%', once: true },

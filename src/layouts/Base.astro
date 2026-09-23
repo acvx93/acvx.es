@@ -38,9 +38,9 @@ const t = UI[idioma];
 
     <script is:inline>
       try {
-        const guardado = localStorage.getItem('tema');
-        if (guardado === 'dark' || guardado === 'light') {
-          document.documentElement.dataset.tema = guardado;
+        const elegido = localStorage.getItem('tema');
+        if (elegido === 'light' || elegido === 'dark') {
+          document.documentElement.dataset.tema = elegido;
         }
       } catch (e) {}
       if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

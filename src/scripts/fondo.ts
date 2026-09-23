@@ -32,11 +32,12 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     semilla = (Math.imul(1664525, semilla) + 1013904223) >>> 0;
     return semilla / 4294967296;
   };
-  const fragmentos = Array.from({ length: 210 }, (_, i): Fragmento => {
+  const totalFragmentos = 228;
+  const fragmentos = Array.from({ length: totalFragmentos }, (_, i): Fragmento => {
     const recorrido = azar() * 2 - 1;
     const dispersion = Math.pow(azar(), 1.8);
     const angulo = azar() * Math.PI * 2;
-    const cercano = i > 197;
+    const cercano = i >= totalFragmentos - 12;
     const tamano = (0.012 + Math.pow(azar(), 2) * 0.057) * (cercano ? 2.2 : 1);
     const lados = 3 + Math.floor(azar() * 3);
     const vertices: Punto[] = Array.from({ length: lados }, (_, j) => {
@@ -106,7 +107,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
           ? (azul ? '70,99,109' : negra ? '8,0,0' : brillo > 0.88 ? '245,163,5' : brillo > 0.58 ? '232,145,5' : '74,39,0')
           : (azul ? '103,122,127' : negra ? '94,68,40' : brillo > 0.65 ? '232,145,5' : '150,107,51');
         const alfa = oscuro ? (negra ? 0.78 : 0.13 + brillo * 0.2)
-          : ancho < 700 ? 0.12 + brillo * 0.16 : 0.055 + brillo * 0.085;
+          : ancho < 700 ? 0.15 + brillo * 0.18 : 0.075 + brillo * 0.1;
         s.beginPath();
         s.moveTo(0, 0);
         s.lineTo(a[0], a[1]);
@@ -225,13 +226,16 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     reanudar();
   }
   function alRedimensionar() {
-    // La barra de direcciones y el teclado cambian innerHeight al deslizar.
-    // En móvil ignoramos también los cambios del layout: pueden alternar lvh
-    // según aparece la barra del navegador y reordenarían la composición.
-    if (ancho < 700) return;
-    // El lienzo usa lvh: solo regeneramos texturas si cambia su tamaño real.
-    if (canvas.clientWidth === ancho && canvas.clientHeight === alto) return;
+    const nuevoAncho = canvas.clientWidth;
+    const nuevoAlto = canvas.clientHeight;
+    // En móvil ignoramos los cambios de alto de la barra del navegador, pero
+    // nunca un cambio de ancho: el bitmap anterior se estiraría para encajar.
+    if (nuevoAncho === ancho && (ancho < 700 || nuevoAlto === alto)) return;
     window.clearTimeout(cambioTamano);
+    if (nuevoAncho !== ancho) {
+      redimensionar();
+      return;
+    }
     cambioTamano = window.setTimeout(redimensionar, 120);
   }
   function alGirar() {
@@ -257,6 +261,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     movimiento.removeEventListener('change', reanudar);
     tema.removeEventListener('change', leerTema);
     observador.disconnect();
+    observadorTamano?.disconnect();
     sprites = [];
     ambiente.width = ambiente.height = 0;
   }
@@ -265,6 +270,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     else destruir();
   }
   const observador = new MutationObserver(leerTema);
+  const observadorTamano = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(alRedimensionar);
   oscuro = (document.documentElement.dataset.tema ?? (tema.matches ? 'dark' : 'light')) === 'dark';
   redimensionar();
   canvas.classList.add('visible');
@@ -277,5 +283,6 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
   movimiento.addEventListener('change', reanudar);
   tema.addEventListener('change', leerTema);
   observador.observe(document.documentElement, { attributes: true, attributeFilter: ['data-tema'] });
+  observadorTamano?.observe(canvas);
   return destruir;
 }
