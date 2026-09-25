@@ -113,9 +113,12 @@ function arrancar() {
       },
     });
 
-    // Una rueda avanza una pantalla de toda la portada: entrada, introducción,
-    // cada cota y ensayos. El objetivo se conserva durante la transición para
-    // que los giros consecutivos no tengan que esperar a la animación anterior.
+    // Un gesto avanza una pantalla de toda la portada: entrada, introducción,
+    // cada cota y ensayos. Reproduce el módulo de rueda de Swiper con los
+    // parámetros de la portada de zarahome.com (vertical, speed 400, curva
+    // ease): solo cuenta como gesto nuevo el evento que crece, cambia de
+    // sentido o llega tras 150 ms de pausa, así la inercia del panel táctil
+    // no encadena saltos. Durante la transición se ignora la rueda.
     const ensayos = trayectoria.nextElementSibling as HTMLElement | null;
     const anclas = () => {
       const maximo = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -126,30 +129,62 @@ function arrancar() {
       return destinos.map((valor) => Math.min(maximo, Math.max(0, valor)))
         .filter((valor, i, lista) => i === 0 || valor - lista[i - 1] > 80);
     };
-    let objetivo = 0;
-    let ultimoPaso = 0;
-    let acumulado = 0;
+    const VELOCIDAD = 0.4;
+    const ease = curvaBezier(0.25, 0.1, 0.25, 1);
+    let animando = false;
+    let finAnimacion = 0;
+    let ultimoIntento = 0;
+    let recientes: { tiempo: number; delta: number; sentido: number }[] = [];
+
+    const saltar = (sentido: number) => {
+      const destinos = anclas();
+      const actual = destinos.reduce((mejor, valor, i) =>
+        Math.abs(valor - window.scrollY) < Math.abs(destinos[mejor] - window.scrollY) ? i : mejor, 0);
+      const siguiente = Math.max(0, Math.min(destinos.length - 1, actual + sentido));
+      if (siguiente === actual) return;
+      animando = true;
+      const terminar = () => {
+        animando = false;
+        window.clearTimeout(finAnimacion);
+      };
+      // Seguro por si Lenis no llega a avisar del final.
+      finAnimacion = window.setTimeout(terminar, VELOCIDAD * 1000 + 150);
+      lenis.scrollTo(destinos[siguiente], { duration: VELOCIDAD, easing: ease, onComplete: terminar });
+    };
+
+    const intentar = (evento: { tiempo: number; delta: number; sentido: number }) => {
+      if (evento.delta >= 6 && evento.tiempo - ultimoIntento < 60) return;
+      if (!animando) saltar(evento.sentido);
+      ultimoIntento = evento.tiempo;
+    };
+
     const avanzar = (evento: WheelEvent) => {
-      if (evento.ctrlKey || evento.defaultPrevented || evento.deltaY === 0) return;
+      if (evento.ctrlKey || evento.defaultPrevented) return;
       if (evento.target instanceof Element && evento.target.closest('dialog, [data-scroll-libre]')) return;
       evento.preventDefault();
       // Lenis no consulta defaultPrevented: si recibe esta misma rueda, suma
       // su delta al salto y la página acaba entre dos pantallas.
       evento.stopImmediatePropagation();
-      const ahora = performance.now();
-      const destinos = anclas();
-      if (ahora - ultimoPaso > 420) {
-        objetivo = destinos.reduce((mejor, valor, i) =>
-          Math.abs(valor - window.scrollY) < Math.abs(destinos[mejor] - window.scrollY) ? i : mejor, 0);
-        acumulado = 0;
+
+      const escala = evento.deltaMode === 1 ? 40 : evento.deltaMode === 2 ? 800 : 1;
+      // Con mayúsculas la rueda vertical llega como horizontal, igual que en Swiper.
+      const cambiado = evento.shiftKey && !evento.deltaX;
+      const x = (cambiado ? evento.deltaY : evento.deltaX) * escala;
+      const y = (cambiado ? 0 : evento.deltaY) * escala;
+      const delta = Math.abs(x) > Math.abs(y) ? x : y;
+      if (delta === 0) return;
+
+      const nuevo = { tiempo: performance.now(), delta: Math.abs(delta), sentido: Math.sign(delta) };
+      const previo = recientes[recientes.length - 1];
+      recientes = [...recientes.slice(-1), nuevo];
+      if (
+        !previo ||
+        nuevo.sentido !== previo.sentido ||
+        nuevo.delta > previo.delta ||
+        nuevo.tiempo > previo.tiempo + 150
+      ) {
+        intentar(nuevo);
       }
-      const delta = evento.deltaY * (evento.deltaMode === 1 ? 16 : evento.deltaMode === 2 ? window.innerHeight : 1);
-      acumulado = Math.sign(delta) === Math.sign(acumulado) ? acumulado + delta : delta;
-      if (Math.abs(acumulado) < 70) return;
-      acumulado = 0;
-      objetivo = Math.max(0, Math.min(destinos.length - 1, objetivo + Math.sign(delta)));
-      ultimoPaso = ahora;
-      lenis.scrollTo(destinos[objetivo], { duration: 0.32 });
     };
     window.addEventListener('wheel', avanzar, { capture: true, passive: false });
   } else if (cotas.length) {
@@ -178,6 +213,35 @@ function arrancar() {
 
   window.__movimientoListo = true;
   ScrollTrigger.refresh();
+}
+
+/* Curva cúbica de CSS como función de Lenis, resuelta por Newton y bisección */
+function curvaBezier(x1: number, y1: number, x2: number, y2: number) {
+  const coordenada = (t: number, a: number, b: number) =>
+    3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  const pendiente = (t: number, a: number, b: number) =>
+    3 * a * (1 - t) ** 2 + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
+  return (x: number) => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 6; i++) {
+      const d = pendiente(t, x1, x2);
+      if (Math.abs(d) < 1e-6) break;
+      t -= (coordenada(t, x1, x2) - x) / d;
+    }
+    if (t < 0 || t > 1 || Math.abs(coordenada(t, x1, x2) - x) > 1e-4) {
+      let bajo = 0;
+      let alto = 1;
+      t = x;
+      for (let i = 0; i < 30; i++) {
+        if (coordenada(t, x1, x2) < x) bajo = t;
+        else alto = t;
+        t = (bajo + alto) / 2;
+      }
+    }
+    return coordenada(t, y1, y2);
+  };
 }
 
 /* Red de seguridad: si algo falla, el contenido nunca se queda invisible */
