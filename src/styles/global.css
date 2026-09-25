@@ -237,9 +237,23 @@ main,
   font-family: var(--fuente-titulo);
   font-variation-settings: "ROND" 0;
   font-weight: 700;
-  font-size: 0.8125rem;
-  letter-spacing: 0.04em;
+  /* El menú va a 13 px; la marca lo multiplica por la proporción áurea. */
+  font-size: 1.3125rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
   text-transform: none;
+  white-space: nowrap;
+}
+
+/* La A dibujada como Δ con el contorno de la A de Google Sans Flex:
+   altura de mayúscula 0,718 em y ancho 0,69 em, sin travesaño y con la
+   base cerrada. */
+.marca__delta {
+  width: 0.69em;
+  height: 0.718em;
+  margin-right: 0.02em;
+  fill: currentColor;
+  vertical-align: baseline;
 }
 
 

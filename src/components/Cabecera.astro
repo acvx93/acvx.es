@@ -24,7 +24,11 @@ const destinoIdioma = alternas[otroIdioma] ?? RUTAS[otroIdioma].inicio;
 
 <header class="cabecera">
   <div class="envoltorio cabecera__fila">
-    <a class="marca" href={r.inicio}>ACVx</a>
+    <a class="marca" href={r.inicio} aria-label="ACVx">
+      <svg class="marca__delta" viewBox="0 0 690 718" aria-hidden="true" focusable="false">
+        <path fill-rule="evenodd" d="M0 718 277 0h136l277 718zm223-130h244L345 272z" />
+      </svg><span aria-hidden="true">CVx</span>
+    </a>
     <nav class="navegacion" aria-label={t.navInicio}>
       {
         enlaces.map((enlace) => (
