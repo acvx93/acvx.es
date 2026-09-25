@@ -245,17 +245,6 @@ main,
   white-space: nowrap;
 }
 
-/* La A dibujada como Δ con el contorno de la A de Google Sans Flex:
-   altura de mayúscula 0,718 em y ancho 0,69 em, sin travesaño y con la
-   base cerrada. */
-.marca__delta {
-  width: 0.69em;
-  height: 0.718em;
-  margin-right: 0.02em;
-  fill: currentColor;
-  vertical-align: baseline;
-}
-
 
 .navegacion {
   display: flex;
