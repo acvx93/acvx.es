@@ -330,6 +330,41 @@ main,
   height: 0.95rem;
 }
 
+/* Volver al principio: mismo lenguaje que los botones de la cabecera, con
+   su fondo translúcido para leerse sobre cualquier sección. */
+.volver-arriba {
+  position: fixed;
+  right: clamp(1.25rem, 2vw, 2rem);
+  bottom: clamp(1.25rem, 2vw, 2rem);
+  z-index: 15;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: color-mix(in srgb, var(--fondo) 70%, transparent);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  transition:
+    color var(--rapido) var(--curva),
+    border-color var(--rapido) var(--curva),
+    opacity 240ms var(--curva),
+    transform 240ms var(--curva),
+    visibility 0s linear 240ms;
+}
+
+.volver-arriba[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.volver-arriba svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
 .boton-icono .tema-icono--sol {
   display: none;
 }
@@ -578,20 +613,25 @@ main,
   gap: 0.75rem;
   font-family: var(--fuente-mono);
   font-size: 0.6875rem;
+  /* Alto de fila entero: con el interlineado heredado (18,14 px) el paso
+     entre marcas se redondeaba a 30 o 31 px y las líneas no quedaban
+     equidistantes. */
+  line-height: 1.125rem;
   letter-spacing: 0.12em;
   color: var(--tinta-tenue);
   font-variant-numeric: tabular-nums;
   transition: color 200ms var(--curva);
 }
 
+/* Se anima el ancho y no un scaleX: un elemento transformado no se ajusta a
+   la rejilla de píxeles y cada línea de 1 px se difuminaba distinto. */
 .trayectoria__marca::after {
   content: "";
+  justify-self: start;
   height: 1px;
-  width: 1.75rem;
+  width: calc(1.75rem * 0.45);
   background: currentColor;
-  transform: scaleX(0.45);
-  transform-origin: left;
-  transition: transform 200ms var(--curva);
+  transition: width 200ms var(--curva);
 }
 
 .trayectoria__marca[data-activa] {
@@ -599,7 +639,7 @@ main,
 }
 
 .trayectoria__marca[data-activa]::after {
-  transform: scaleX(1);
+  width: 1.75rem;
 }
 
 .trayectoria--fijada .cotas {

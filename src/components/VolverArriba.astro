@@ -1,0 +1,12 @@
+---
+import { UI, type Idioma } from '../i18n/ui';
+
+const { idioma } = Astro.props as { idioma: Idioma };
+const t = UI[idioma];
+---
+
+<button class="boton-icono volver-arriba" type="button" data-volver-arriba aria-label={t.volverArriba} title={t.volverArriba}>
+  <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    <path d="M8 13.5V2.8M3.4 7.2 8 2.6l4.6 4.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+</button>

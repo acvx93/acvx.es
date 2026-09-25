@@ -6,6 +6,7 @@ import '@fontsource/titillium-web/latin-700.css';
 import '../styles/global.css';
 import Cabecera from '../components/Cabecera.astro';
 import Pie from '../components/Pie.astro';
+import VolverArriba from '../components/VolverArriba.astro';
 import { SITIO } from '../config';
 import { RUTAS, UI, type Idioma } from '../i18n/ui';
 
@@ -129,6 +130,7 @@ const t = UI[idioma];
       <slot />
     </main>
     <Pie idioma={idioma} />
+    <VolverArriba idioma={idioma} />
 
     <script>
       import '../scripts/movimiento';

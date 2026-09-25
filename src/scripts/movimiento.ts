@@ -17,6 +17,25 @@ if (lienzo) {
   import('./fondo').then((modulo) => modulo.montarFondo(lienzo)).catch(() => undefined);
 }
 
+// Se declara antes de arrancar(), que lo asigna al cargar el módulo.
+let lenisActivo: Lenis | null = null;
+
+/* Volver al principio: aparece al bajar media pantalla */
+const volver = document.querySelector<HTMLButtonElement>('[data-volver-arriba]');
+if (volver) {
+  const actualizar = () => volver.toggleAttribute('data-visible', window.scrollY > window.innerHeight * 0.5);
+  window.addEventListener('scroll', actualizar, { passive: true });
+  actualizar();
+  volver.addEventListener('click', () => {
+    if (lenisActivo) {
+      lenisActivo.scrollTo(0, { duration: 1.1, easing: (t) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t)) });
+    } else {
+      window.scrollTo({ top: 0, behavior: quieto ? 'auto' : 'smooth' });
+    }
+    document.querySelector<HTMLElement>('.marca')?.focus({ preventScroll: true });
+  });
+}
+
 function rendirse() {
   raiz.classList.remove('js-listo');
   window.__movimientoListo = true;
@@ -36,6 +55,7 @@ function arrancar() {
   gsap.registerPlugin(ScrollTrigger);
 
   const lenis = new Lenis({ duration: 0.55, smoothWheel: true });
+  lenisActivo = lenis;
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((tiempo) => lenis.raf(tiempo * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -99,16 +119,20 @@ function arrancar() {
 
     const etapas = cotas.length + 1;
 
+    // Cada etapa ocupa una pantalla de recorrido y su parada queda en el
+    // centro del tramo. Si una parada cayera en el borde, la escena pasaría de
+    // fija a estática en reposo y se movería una fracción de píxel, lo que
+    // descuadra las líneas de 1 px del eje respecto a sus números.
     const disparador = ScrollTrigger.create({
       trigger: escena,
       start: 'top top',
-      end: () => '+=' + window.innerHeight * (etapas - 1),
+      end: () => '+=' + window.innerHeight * etapas,
       pin: true,
       pinSpacing: true,
       scrub: 0.1,
       invalidateOnRefresh: true,
       onUpdate: (self) => {
-        const indice = Math.min(etapas - 1, Math.round(self.progress * (etapas - 1)));
+        const indice = Math.min(etapas - 1, Math.floor(self.progress * etapas));
         activar(Math.max(0, indice));
       },
     });
@@ -124,8 +148,8 @@ function arrancar() {
     const ensayos = trayectoria.nextElementSibling as HTMLElement | null;
     const anclas = () => {
       const maximo = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-      const paso = (disparador.end - disparador.start) / (etapas - 1);
-      const destinos = [0, ...Array.from({ length: etapas }, (_, i) => disparador.start + paso * i)];
+      const paso = (disparador.end - disparador.start) / etapas;
+      const destinos = [0, ...Array.from({ length: etapas }, (_, i) => disparador.start + paso * (i + 0.5))];
       if (ensayos) destinos.push(window.scrollY + ensayos.getBoundingClientRect().top);
       destinos.push(maximo);
       return destinos.map((valor) => Math.min(maximo, Math.max(0, valor)))
