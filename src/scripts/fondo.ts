@@ -103,11 +103,13 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
         const a = puntos[j], b = puntos[(j + 1) % puntos.length];
         const brillo = 0.5 + 0.5 * Math.sin(pieza.giro[1] + j * 1.9 + pieza.fase);
         const negra = pieza.material < 0.46, azul = pieza.material > 0.985;
+        // En claro la fuerza viene del contraste: fragmentos de tinta cálida
+        // y ámbar saturado con opacidad real, no grises translúcidos.
         const color = oscuro
           ? (azul ? '70,99,109' : negra ? '8,0,0' : brillo > 0.88 ? '245,163,5' : brillo > 0.58 ? '232,145,5' : '74,39,0')
-          : (azul ? '103,122,127' : negra ? '94,68,40' : brillo > 0.65 ? '232,145,5' : '150,107,51');
+          : (azul ? '70,99,109' : negra ? '74,44,18' : brillo > 0.8 ? '245,163,5' : brillo > 0.5 ? '232,145,5' : '168,83,0');
         const alfa = oscuro ? (negra ? 0.78 : 0.13 + brillo * 0.2)
-          : ancho < 700 ? 0.15 + brillo * 0.18 : 0.075 + brillo * 0.1;
+          : negra ? 0.22 : 0.2 + brillo * 0.3;
         s.beginPath();
         s.moveTo(0, 0);
         s.lineTo(a[0], a[1]);
@@ -117,7 +119,7 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
         s.fill();
         if (!negra && brillo > 0.86 && !blur) {
           s.beginPath(); s.moveTo(a[0], a[1]); s.lineTo(b[0], b[1]);
-          s.strokeStyle = oscuro ? 'rgba(245,163,5,0.28)' : 'rgba(150,107,51,0.16)';
+          s.strokeStyle = oscuro ? 'rgba(245,163,5,0.28)' : 'rgba(168,83,0,0.4)';
           s.lineWidth = 0.55; s.stroke();
         }
       }
@@ -141,8 +143,8 @@ export function montarFondo(canvas: HTMLCanvasElement): (() => void) | undefined
     luzCtx.translate(origenX(), alto * 0.48);
     luzCtx.scale(0.54, 1);
     const luz = luzCtx.createRadialGradient(0, 0, 0, 0, 0, alto * 0.64);
-    luz.addColorStop(0, oscuro ? 'rgba(232,145,5,0.12)' : 'rgba(245,163,5,0.10)');
-    luz.addColorStop(0.5, oscuro ? 'rgba(74,39,0,0.16)' : 'rgba(232,145,5,0.045)');
+    luz.addColorStop(0, oscuro ? 'rgba(232,145,5,0.12)' : 'rgba(245,163,5,0.24)');
+    luz.addColorStop(0.5, oscuro ? 'rgba(74,39,0,0.16)' : 'rgba(232,145,5,0.09)');
     luz.addColorStop(1, 'rgba(74,39,0,0)');
     luzCtx.fillStyle = luz;
     luzCtx.fillRect(-alto, -alto, alto * 2, alto * 2);
