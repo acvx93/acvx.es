@@ -114,11 +114,11 @@ function arrancar() {
     });
 
     // Un gesto avanza una pantalla de toda la portada: entrada, introducción,
-    // cada cota y ensayos. Reproduce el módulo de rueda de Swiper con los
-    // parámetros de la portada de zarahome.com (vertical, speed 400, curva
-    // ease): solo cuenta como gesto nuevo el evento que crece, cambia de
-    // sentido o llega tras 150 ms de pausa, así la inercia del panel táctil
-    // no encadena saltos. Durante la transición se ignora la rueda.
+    // cada cota y ensayos, con la transición de zarahome.com (400 ms, curva
+    // ease). Un gesto es todo el chorro de eventos de rueda, inercia incluida,
+    // hasta una pausa de 200 ms o un cambio de sentido. No se mira cómo varía
+    // el delta: el panel táctil de Windows lo manda con ruido y cada repunte
+    // parecería un gesto nuevo.
     const ensayos = trayectoria.nextElementSibling as HTMLElement | null;
     const anclas = () => {
       const maximo = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -130,11 +130,12 @@ function arrancar() {
         .filter((valor, i, lista) => i === 0 || valor - lista[i - 1] > 80);
     };
     const VELOCIDAD = 0.4;
+    const PAUSA = 200;
     const ease = curvaBezier(0.25, 0.1, 0.25, 1);
     let animando = false;
     let finAnimacion = 0;
-    let ultimoIntento = 0;
-    let recientes: { tiempo: number; delta: number; sentido: number }[] = [];
+    let ultimoEvento = 0;
+    let gesto: { sentido: number; consumido: boolean } | null = null;
 
     const saltar = (sentido: number) => {
       const destinos = anclas();
@@ -144,18 +145,18 @@ function arrancar() {
       if (siguiente === actual) return;
       animando = true;
       const terminar = () => {
+        if (!animando) return;
         animando = false;
         window.clearTimeout(finAnimacion);
+        // Un gesto que empezó durante la transición salta al acabar esta.
+        if (gesto && !gesto.consumido) {
+          gesto.consumido = true;
+          saltar(gesto.sentido);
+        }
       };
       // Seguro por si Lenis no llega a avisar del final.
       finAnimacion = window.setTimeout(terminar, VELOCIDAD * 1000 + 150);
       lenis.scrollTo(destinos[siguiente], { duration: VELOCIDAD, easing: ease, onComplete: terminar });
-    };
-
-    const intentar = (evento: { tiempo: number; delta: number; sentido: number }) => {
-      if (evento.delta >= 6 && evento.tiempo - ultimoIntento < 60) return;
-      if (!animando) saltar(evento.sentido);
-      ultimoIntento = evento.tiempo;
     };
 
     const avanzar = (evento: WheelEvent) => {
@@ -174,16 +175,15 @@ function arrancar() {
       const delta = Math.abs(x) > Math.abs(y) ? x : y;
       if (delta === 0) return;
 
-      const nuevo = { tiempo: performance.now(), delta: Math.abs(delta), sentido: Math.sign(delta) };
-      const previo = recientes[recientes.length - 1];
-      recientes = [...recientes.slice(-1), nuevo];
-      if (
-        !previo ||
-        nuevo.sentido !== previo.sentido ||
-        nuevo.delta > previo.delta ||
-        nuevo.tiempo > previo.tiempo + 150
-      ) {
-        intentar(nuevo);
+      const ahora = performance.now();
+      const sentido = Math.sign(delta);
+      if (!gesto || ahora - ultimoEvento > PAUSA || sentido !== gesto.sentido) {
+        gesto = { sentido, consumido: false };
+      }
+      ultimoEvento = ahora;
+      if (!gesto.consumido && !animando) {
+        gesto.consumido = true;
+        saltar(sentido);
       }
     };
     window.addEventListener('wheel', avanzar, { capture: true, passive: false });
