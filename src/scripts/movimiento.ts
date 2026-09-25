@@ -114,11 +114,13 @@ function arrancar() {
     });
 
     // Un gesto avanza una pantalla de toda la portada: entrada, introducción,
-    // cada cota y ensayos, con la transición de zarahome.com (400 ms, curva
-    // ease). Un gesto es todo el chorro de eventos de rueda, inercia incluida,
-    // hasta una pausa de 200 ms o un cambio de sentido. No se mira cómo varía
-    // el delta: el panel táctil de Windows lo manda con ruido y cada repunte
-    // parecería un gesto nuevo.
+    // cada cota y ensayos. Los paneles táctiles siguen mandando rueda por
+    // inercia después de soltar, así que un silencio no sirve para separar
+    // gestos. Como en fullPage.js, se compara la media de los últimos eventos
+    // con la de los anteriores: la inercia decae y un empujón nuevo acelera.
+    // Tras cada salto, el siguiente exige que antes el gesto haya frenado por
+    // debajo del 40 % de su pico y que luego repunte a 2,5 veces el valle;
+    // así un deslizamiento largo, aunque llegue con ruido, cuenta una vez.
     const ensayos = trayectoria.nextElementSibling as HTMLElement | null;
     const anclas = () => {
       const maximo = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
@@ -129,13 +131,31 @@ function arrancar() {
       return destinos.map((valor) => Math.min(maximo, Math.max(0, valor)))
         .filter((valor, i, lista) => i === 0 || valor - lista[i - 1] > 80);
     };
-    const VELOCIDAD = 0.4;
+    const DURACION = 0.5;
     const PAUSA = 200;
-    const ease = curvaBezier(0.25, 0.1, 0.25, 1);
+    // Al volver a tocar el panel, la inercia se corta, los eventos (cada
+    // 8-16 ms) se interrumpen y el dedo nuevo arranca despacio. Un hueco con
+    // caída a menos de la mitad marca un dedo nuevo; tras un frame perdido la
+    // inercia sigue igual o más fuerte, porque el navegador agrupa lo atrasado.
+    const TOQUE = 40;
+    // Salida exponencial, la curva por defecto de Lenis: responde al instante.
+    const salida = (t: number) => (t >= 1 ? 1 : 1 - 2 ** (-10 * t));
+    const media = (lista: number[], n: number) => {
+      const tramo = lista.slice(-n);
+      return tramo.reduce((suma, valor) => suma + valor, 0) / tramo.length;
+    };
+
     let animando = false;
     let finAnimacion = 0;
+    let pendiente = 0;
     let ultimoEvento = 0;
-    let gesto: { sentido: number; consumido: boolean } | null = null;
+    let sentidoActual = 0;
+    let historial: number[] = [];
+    // libre: puede saltar ya. frenando: acaba de saltar y espera a que el
+    // gesto decaiga. armado: ha decaído y salta si vuelve a acelerar.
+    let fase: 'libre' | 'frenando' | 'armado' = 'libre';
+    let pico = 0;
+    let valle = 0;
 
     const saltar = (sentido: number) => {
       const destinos = anclas();
@@ -148,15 +168,24 @@ function arrancar() {
         if (!animando) return;
         animando = false;
         window.clearTimeout(finAnimacion);
-        // Un gesto que empezó durante la transición salta al acabar esta.
-        if (gesto && !gesto.consumido) {
-          gesto.consumido = true;
-          saltar(gesto.sentido);
+        // Los gestos que llegaron durante la transición saltan al acabar esta,
+        // uno por gesto.
+        if (pendiente) {
+          const sentidoPendiente = Math.sign(pendiente);
+          pendiente -= sentidoPendiente;
+          saltar(sentidoPendiente);
         }
       };
       // Seguro por si Lenis no llega a avisar del final.
-      finAnimacion = window.setTimeout(terminar, VELOCIDAD * 1000 + 150);
-      lenis.scrollTo(destinos[siguiente], { duration: VELOCIDAD, easing: ease, onComplete: terminar });
+      finAnimacion = window.setTimeout(terminar, DURACION * 1000 + 150);
+      lenis.scrollTo(destinos[siguiente], { duration: DURACION, easing: salida, onComplete: terminar });
+    };
+
+    const pedirSalto = (sentido: number, fuerza: number) => {
+      fase = 'frenando';
+      pico = fuerza;
+      if (!animando) saltar(sentido);
+      else pendiente = Math.sign(pendiente) === -sentido ? sentido : Math.max(-2, Math.min(2, pendiente + sentido));
     };
 
     const avanzar = (evento: WheelEvent) => {
@@ -167,23 +196,45 @@ function arrancar() {
       // su delta al salto y la página acaba entre dos pantallas.
       evento.stopImmediatePropagation();
 
+      // Solo cuenta el eje vertical; con mayúsculas la rueda llega en el
+      // horizontal. Un deslizamiento algo torcido en el panel mete eventos
+      // horizontales que no deben cambiar el sentido.
       const escala = evento.deltaMode === 1 ? 40 : evento.deltaMode === 2 ? 800 : 1;
-      // Con mayúsculas la rueda vertical llega como horizontal, igual que en Swiper.
-      const cambiado = evento.shiftKey && !evento.deltaX;
-      const x = (cambiado ? evento.deltaY : evento.deltaX) * escala;
-      const y = (cambiado ? 0 : evento.deltaY) * escala;
-      const delta = Math.abs(x) > Math.abs(y) ? x : y;
-      if (delta === 0) return;
+      const cambiado = evento.shiftKey && !evento.deltaY;
+      const x = (cambiado ? 0 : evento.deltaX) * escala;
+      const y = (cambiado ? evento.deltaX : evento.deltaY) * escala;
+      if (y === 0 || Math.abs(x) > Math.abs(y)) return;
 
       const ahora = performance.now();
-      const sentido = Math.sign(delta);
-      if (!gesto || ahora - ultimoEvento > PAUSA || sentido !== gesto.sentido) {
-        gesto = { sentido, consumido: false };
+      const sentido = Math.sign(y);
+      const hueco = ahora - ultimoEvento;
+      if (hueco > PAUSA || sentido !== sentidoActual) {
+        historial = [];
+        fase = 'libre';
+      } else if (hueco > TOQUE && fase === 'frenando' && Math.abs(y) < media(historial, 6) * 0.5) {
+        historial = [];
+        fase = 'armado';
+        valle = Infinity;
       }
       ultimoEvento = ahora;
-      if (!gesto.consumido && !animando) {
-        gesto.consumido = true;
-        saltar(sentido);
+      sentidoActual = sentido;
+      historial.push(Math.abs(y));
+      if (historial.length > 120) historial.shift();
+
+      const corta = media(historial, 6);
+      const larga = media(historial, 40);
+
+      if (fase === 'libre') {
+        pedirSalto(sentido, corta);
+      } else if (fase === 'frenando') {
+        pico = Math.max(pico, corta);
+        if (corta < pico * 0.4) {
+          fase = 'armado';
+          valle = corta;
+        }
+      } else {
+        valle = Math.min(valle, corta);
+        if (corta >= larga && corta > valle * 2.5 + 3) pedirSalto(sentido, corta);
       }
     };
     window.addEventListener('wheel', avanzar, { capture: true, passive: false });
@@ -213,35 +264,6 @@ function arrancar() {
 
   window.__movimientoListo = true;
   ScrollTrigger.refresh();
-}
-
-/* Curva cúbica de CSS como función de Lenis, resuelta por Newton y bisección */
-function curvaBezier(x1: number, y1: number, x2: number, y2: number) {
-  const coordenada = (t: number, a: number, b: number) =>
-    3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
-  const pendiente = (t: number, a: number, b: number) =>
-    3 * a * (1 - t) ** 2 + 6 * (b - a) * t * (1 - t) + 3 * (1 - b) * t * t;
-  return (x: number) => {
-    if (x <= 0) return 0;
-    if (x >= 1) return 1;
-    let t = x;
-    for (let i = 0; i < 6; i++) {
-      const d = pendiente(t, x1, x2);
-      if (Math.abs(d) < 1e-6) break;
-      t -= (coordenada(t, x1, x2) - x) / d;
-    }
-    if (t < 0 || t > 1 || Math.abs(coordenada(t, x1, x2) - x) > 1e-4) {
-      let bajo = 0;
-      let alto = 1;
-      t = x;
-      for (let i = 0; i < 30; i++) {
-        if (coordenada(t, x1, x2) < x) bajo = t;
-        else alto = t;
-        t = (bajo + alto) / 2;
-      }
-    }
-    return coordenada(t, y1, y2);
-  };
 }
 
 /* Red de seguridad: si algo falla, el contenido nunca se queda invisible */
