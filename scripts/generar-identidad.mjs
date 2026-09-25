@@ -24,12 +24,12 @@ const og = `
   </g>
   <text x="92" y="395" font-family="Arial, Helvetica, sans-serif" font-size="27" fill="#b2aba1" letter-spacing="1.2">SISTEMAS DE IA APLICADA</text>
   <text x="92" y="432" font-family="Arial, Helvetica, sans-serif" font-size="27" fill="#e89105" letter-spacing="1.2">Y PRODUCTO PROPIO.</text>
-  <g transform="translate(92 535)"><rect width="32" height="32" rx="7" fill="#e89105"/><path d="M16 6.5 26 24H6z" fill="#080000"/><text x="49" y="25" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#b2aba1" letter-spacing="2">ACVX.ES</text></g>
+  <g transform="translate(92 535)"><rect width="32" height="32" rx="7" fill="#b2aba1"/><path d="M16 6.5 26 24H6z" fill="#080000"/><text x="49" y="25" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#b2aba1" letter-spacing="2">ACVX.ES</text></g>
 </svg>`;
 
 const icon = `
 <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#e89105"/>
+  <rect width="32" height="32" rx="7" fill="#b2aba1"/>
   <path d="M16 6.5 26 24H6z" fill="#080000"/>
 </svg>`;
 
